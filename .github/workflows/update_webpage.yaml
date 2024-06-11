@@ -33,10 +33,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Process data
-        env:
-          LINK_DICT:  ${{ secrets.LINK_DICT }}
-          DOWNLOAD_DATA : "true"
-          IS_GITHUB_ACTION : "true"
+        # env:
+        #   LINK_DICT:  ${{ secrets.LINK_DICT }}
+        #   DOWNLOAD_DATA : "true"
+        #   IS_GITHUB_ACTION : "true"
         run: python main.py
       
       # - name: Debug
