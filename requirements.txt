@@ -1,0 +1,6 @@
+pandas
+numpy
+openpyxl
+matplotlib
+ansys-sphinx-theme
+pydantic == 2.7.1

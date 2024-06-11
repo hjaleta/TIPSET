@@ -1,0 +1,10 @@
+# Dictionary of spelling mistakes from participants
+# should be on form
+# spelling_dict = { 
+#     "wrongg spellink 1": "correct spelling 1",
+#     "wtong speeling 2": "correct spelling 2",
+# }
+
+spelling_dict = {
+    "Test 1": "Test1",
+}

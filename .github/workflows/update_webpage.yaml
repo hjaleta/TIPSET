@@ -1,0 +1,57 @@
+name: Update Website
+
+# Build docs on manual workflow dispatch
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # - name: Checkout submodule
+      #   env:
+      #     GIT_SSH_COMMAND: "ssh -o StrictHostKeyChecking=no"
+      #   run:
+      #     eval `ssh-agent -s`;
+      #     ssh-add - <<< "${{ secrets.EMULATOR_DEPLOYMENT_KEY }}";
+      #     git submodule update --init --recursive --remote;
+      #     ssh-add -D;
+      #     eval `ssh-agent -k`
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      #     cache: 'poetry'
+
+      - run: ls
+
+      - name: Install required packages
+        run: pip install -r requirements.txt
+
+      - name: Process data
+        env:
+          LINK_DICT:  ${{ secrets.LINK_DICT }}
+          DOWNLOAD_DATA : "true"
+          IS_GITHUB_ACTION : "true"
+        run: python main.py
+      
+      # - name: Debug
+      #   run: ls tips/data
+
+      - name: Sphinx build webpage
+        run: |
+          sphinx-build webpage/source webpage/build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+
+        with:
+          publish_branch: webpage-deployment
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: webpage/build
+          cname: https://hjaleta.github.io/TIPSET/
+          force_orphan: true
