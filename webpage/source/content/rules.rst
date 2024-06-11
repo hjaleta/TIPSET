@@ -44,6 +44,7 @@ Bonusfrågorna lämnar du också in i början av turneringen, innan den första 
 
 .. note:: 
     Ifall flera spelare i slutet av turneringen toppar skytteligan kan man få poäng på alla dessa. För att förtydliga exemplet:
+
     - Rooney slutar på 6 mål och 2 assist.
     - Van Persie slutar på 6 mål och 0 assist.
     - Raúl slutar på 6 mål och 4 assist.
