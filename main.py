@@ -9,6 +9,8 @@ EXCLUDE_PLAYERS = ["Test1", "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Tes
 INCLUDE_PHASES = []
 IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
 
+print(f"DOWNLOAD_DATA: {DOWNLOAD_DATA}")
+
 # Step 1 - Download and parse the data to csv
 if DOWNLOAD_DATA == "true":
     download_data()
