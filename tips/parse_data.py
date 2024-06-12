@@ -18,6 +18,8 @@ class Tournament(BaseModel):
     
     def build_players(self, exclude_players: Optional[list[str]] = None):
         
+        print(f"EXCLUDING PLAYERS: {exclude_players}")
+
         group_stage_df = pd.read_csv('tips/data/group_stage_ANSWERS.csv')
         # print(group_stage_df)
 
@@ -35,7 +37,7 @@ class Tournament(BaseModel):
                 is_facit = False
             )
             if player.name in exclude_players:
-                print(f"Excluding player {player.name}")
+                pass
             else:
                 self.players.append(player)
         
@@ -65,6 +67,8 @@ class Tournament(BaseModel):
 
     def add_guesses(self, exclude_players = Optional[list[str]]):
         
+        
+
         if exclude_players is None:
             exclude_players = []
 
@@ -82,7 +86,6 @@ class Tournament(BaseModel):
             for index, row in phase_df.iterrows():
                 name = row["Vad heter du? (För- och efternamn)"].strip()
                 if name in exclude_players:
-                    print(f"Excluding player {name}")
                     continue
 
                 player = self.get_player(name)
@@ -102,7 +105,6 @@ class Tournament(BaseModel):
                 for index, row in phase_df.iterrows():
                     name = row["Vad heter du? (För- och efternamn)"].strip()
                     if name in exclude_players:
-                        print(f"Excluding player {name}")
                         continue
                     player = self.get_player(name)
                     player.group_tables = self.get_group_tables(row, start_event_index = event_index)
@@ -117,7 +119,6 @@ class Tournament(BaseModel):
         for index, row in bonus_df.iterrows():
             name = row["Vad heter du? (För- och efternamn)"].strip()
             if name in exclude_players:
-                print(f"Excluding player {name}")
                 continue
             player = self.get_player(name)
 
