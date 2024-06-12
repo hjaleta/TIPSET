@@ -8,6 +8,8 @@ from tips.data.spelling_dict import spelling_dict
 from tips.util import rst_toctree, rst_csv_table
 from typing import Optional
 from datetime import datetime, timedelta
+import warnings
+
 
 class Tournament(BaseModel):
     players: list[Player] = []
@@ -59,7 +61,7 @@ class Tournament(BaseModel):
             print(f"Found spelling mistake for {name}, using correct spelling {spelling_dict[name]} instead.")
             return self.get_player(spelling_dict[name])
 
-        raise ValueError(f"Could not find player with name '{name}'")        
+        return None   
 
     def add_guesses(self, exclude_players = Optional[list[str]]):
         
@@ -84,7 +86,11 @@ class Tournament(BaseModel):
                     continue
 
                 player = self.get_player(name)
-                player.games[phase] = self.get_games(row, phase = phase, start_event_index = event_index)
+
+                if player is None:
+                    warnings.warn(f"Could not find player {name}, so cannot add guesses for {phase}")
+                else:
+                    player.games[phase] = self.get_games(row, phase = phase, start_event_index = event_index)
 
             phase_facit_df = pd.read_csv(f'tips/data/{phase}_RESULTS.csv')
             phase_facit_df.fillna("", inplace=True)
@@ -114,7 +120,11 @@ class Tournament(BaseModel):
                 print(f"Excluding player {name}")
                 continue
             player = self.get_player(name)
-            player.bonus_questions = self.get_bonus(row, start_event_index = event_index)
+
+            if player is None:
+                warnings.warn(f"Could not find player {name}, so cannot add bonus guesses")
+            else:
+                player.bonus_questions = self.get_bonus(row, start_event_index = event_index)
         
         self.facit.bonus_questions = self.get_bonus(phase_facit_df.iloc[0], start_event_index = event_index, facit = True)
 

@@ -7,4 +7,5 @@
 
 spelling_dict = {
     "Test 1": "Test1",
+    "Antoine Pomari": "Antoine",
 }
