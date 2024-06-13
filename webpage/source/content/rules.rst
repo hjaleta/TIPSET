@@ -82,7 +82,7 @@ Hursomhelst har du tre poäng att vinna per match i åttondels-, kvarts- och sem
     Resultatet du skriver in inkluderar **inte** straffar från en eventuell straffläggning. Till exampel:
     
     Du tror att Kroatien slår ut Spanien på straffar, efter att ha spelat 2-2 efter 120 minuter.
-    Du ska då skriva in 2-2 som resultat, Kroatien som vinnare och 120 minuter som sluttid.
+    Du ska då skriva in 2-2 som resultat, Kroatien som vinnare och straffar som sluttid.
 
 Finalen kommer innehålla lite fler frågor än de övriga slutspelsmatcherna och det kommer gå att samla upp till sju poäng där.
 
