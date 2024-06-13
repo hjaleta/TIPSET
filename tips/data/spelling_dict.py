@@ -8,4 +8,8 @@
 spelling_dict = {
     "Test 1": "Test1",
     "Antoine Pomari": "Antoine",
+    "Jo då så att": "Erik Hallin",
+    "Ali": "Ali Sentissi",
+    "ThomasB": "Thomas Berg",
+    "Arthur Cherry (Awaken Beerus)": "Arthur Cherry",
 }
