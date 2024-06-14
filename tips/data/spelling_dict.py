@@ -12,4 +12,5 @@ spelling_dict = {
     "Ali": "Ali Sentissi",
     "ThomasB": "Thomas Berg",
     "Arthur Cherry (Awaken Beerus)": "Arthur Cherry",
+    "Arvid Thomasson, Arre": "Arvid Thomasson",
 }
