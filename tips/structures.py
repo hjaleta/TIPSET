@@ -207,7 +207,7 @@ class Player(BaseModel):
                 )
                 )
             
-            # rst_files_to_include.append('bonus')
+            rst_files_to_include.append('bonus')
         
         if self.group_tables and 'group_stage' in include:
             group_table_rst_string = textwrap.dedent("""
