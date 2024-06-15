@@ -201,11 +201,11 @@ class Player(BaseModel):
                 Bonusfrågor
                 -----------
 
-                """)) + rst_csv_table(
+                """) + rst_csv_table(
                     "bonus_table.csv",
                     directives = {"widths": "70, 30", "header-rows": 1}
                 )
-
+                )
             
             # rst_files_to_include.append('bonus')
         

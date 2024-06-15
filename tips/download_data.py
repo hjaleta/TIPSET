@@ -19,7 +19,7 @@ def download_data():
             assert response.status_code == 200, 'Wrong status code'
             with open(f'tips/data/{key}.csv', 'w') as f:
                 f.write(response.content.decode('utf-8'))
-        
+            print(f"Downloaded {key} successfully")
         except Exception as e:
             print(f"Error downloading {key}: {e}")
 

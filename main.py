@@ -6,7 +6,9 @@ import json
 
 DOWNLOAD_DATA = os.getenv("DOWNLOAD_DATA", "false")
 EXCLUDE_PLAYERS = ["Test1", "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Test 17"]
-INCLUDE_PHASES = []
+INCLUDE_PHASES = ["group_stage", "bonus"]
+
+
 IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
 
 print(f"DOWNLOAD_DATA: {DOWNLOAD_DATA}")
@@ -14,6 +16,7 @@ print(f"DOWNLOAD_DATA: {DOWNLOAD_DATA}")
 # Step 1 - Download and parse the data to csv
 if DOWNLOAD_DATA == "true":
     download_data()
+    
 elif DOWNLOAD_DATA == "false":
     pass
 else:
