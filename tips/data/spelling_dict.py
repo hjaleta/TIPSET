@@ -13,4 +13,8 @@ spelling_dict = {
     "ThomasB": "Thomas Berg",
     "Arthur Cherry (Awaken Beerus)": "Arthur Cherry",
     "Arvid Thomasson, Arre": "Arvid Thomasson",
+    "Isac Korduner": "Isac korduner",
+    "Christian Möller": "Christian möller",
+    "Isaac Ekblom": "Isac ekblom",
+    "Cristiano Ronaldinho": "Kenji Capannelli",
 }
