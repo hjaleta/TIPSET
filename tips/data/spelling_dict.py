@@ -17,4 +17,6 @@ spelling_dict = {
     "Christian Möller": "Christian möller",
     "Isaac Ekblom": "Isac ekblom",
     "Cristiano Ronaldinho": "Kenji Capannelli",
+    "Waldemar Hj Blomster": "Waldemar Blomster",
+    "sara": "Sara Whittaker",
 }
