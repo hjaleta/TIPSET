@@ -215,8 +215,8 @@ class Player(BaseModel):
             --------------------
             """)
             for group_table in self.group_tables:
-                file_path = os.path.join(player_dir, f"table_{group_table.group}.csv")
-                with open(file_path, 'w') as f:
+                group_table_file_path = os.path.join(player_dir, f"table_{group_table.group}.csv")
+                with open(group_table_file_path, 'w') as f:
                     f.write("Placering,Lag\n")
                     for i, team in enumerate(group_table.teams_in_order, start=1):
                         f.write(f"{i},{team}\n")
@@ -282,7 +282,7 @@ class Player(BaseModel):
                         f.write(f"{game.teams[0]} - {game.teams[1]},{game.score[0]} - {game.score[1]},{points}\n")
 
             elif phase in ('last_16', 'quarter_finals', 'semi_finals'):
-                with open(file_path, 'w') as f:
+                with open(table_file_path, 'w') as f:
                     f.write("Match,Tippat resultat,Tippad sluttid,Vinnare,Tjänade poäng\n")
                     for game in games:
                         points = '?' if game.points is None else game.points
