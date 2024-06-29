@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator, model_validator, Field, ConfigDict
-from typing import Literal, Optional
+from typing import Literal, Optional, Tuple, Dict, List
 import os
 import textwrap
 from tips.util import rst_toctree, rst_csv_table
@@ -25,8 +25,8 @@ Phase = Literal['group_stage', 'last_16', 'quarter_finals', 'semi_finals', 'fina
 Endtime = Literal['90', '120', 'penalties']
 
 class Game(BaseModel):
-    teams: tuple[Team, Team]
-    score : tuple[int, int]
+    teams: Tuple[Team, Team]
+    score : Tuple[int, int]
     event_index : int
     group : Optional[Group] = None
     phase : Phase
@@ -76,8 +76,8 @@ class Game(BaseModel):
             if self.winner not in self.teams:
                 raise ValueError('Winner must be one of the teams in the game')
 
-            if (self.winner == self.teams[0] and self.score[0] < self.score[1]) or (self.winner == self.teams[1] and self.score[0] > self.score[1]):
-                raise ValueError('Winner cannot be the team with the lower score')
+            # if (self.winner == self.teams[0] and self.score[0] < self.score[1]) or (self.winner == self.teams[1] and self.score[0] > self.score[1]):
+            #     raise ValueError('Winner cannot be the team with the lower score')
 
         return self
 
@@ -88,9 +88,9 @@ class Game(BaseModel):
             if self.endtime != '90':
                 raise ValueError('Group stage games are 90 minutes long')
 
-        else:
-            if self.score[0] == self.score[1] and self.endtime != 'penalties':
-                raise ValueError('If a game is not in the group stage, endtime must be penalties if the score is a draw')
+        # else:
+        #     if self.score[0] == self.score[1] and self.endtime != 'penalties':
+        #         raise ValueError('If a game is not in the group stage, endtime must be penalties if the score is a draw')
 
         return self
 
@@ -108,7 +108,7 @@ class Game(BaseModel):
         self.points = points
 
 class GroupTable(BaseModel):
-    teams_in_order : tuple[Team, Team, Team, Team]
+    teams_in_order : Tuple[Team, Team, Team, Team]
     group: Optional[Literal['A', 'B', 'C', 'D', 'E', 'F']] = None
     points: Optional[int] = None
     event_index: int
@@ -150,10 +150,10 @@ class Player(BaseModel):
     name: str
     nick: str
     email: str
-    games : dict[Phase, list[Game]] = Field(default = {})
-    group_tables : list[GroupTable] = []
-    bonus_questions : list[Bonus] = []
-    point_list: list = []
+    games : Dict[Phase, List[Game]] = Field(default = {})
+    group_tables : List[GroupTable] = []
+    bonus_questions : List[Bonus] = []
+    point_list: List = []
     total_points: Optional[int] = None
     is_facit : bool = False
 

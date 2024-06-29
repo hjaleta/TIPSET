@@ -6,17 +6,22 @@ import textwrap
 import os
 from tips.data.spelling_dict import spelling_dict
 from tips.util import rst_toctree, rst_csv_table
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timedelta
 import warnings
 
+endtime_dict = {
+    "Efter 90 minuter": "90",
+    "Efter 120 minuter": "120",
+    "Efter straffar": "penalties"
+}
 
 class Tournament(BaseModel):
-    players: list[Player] = []
+    players: List[Player] = []
     facit: Player = None
     max_points: int = 0
     
-    def build_players(self, exclude_players: Optional[list[str]] = None):
+    def build_players(self, exclude_players: Optional[List[str]] = None):
         
         print(f"EXCLUDING PLAYERS: {exclude_players}")
 
@@ -65,7 +70,7 @@ class Tournament(BaseModel):
 
         return None   
 
-    def add_guesses(self, exclude_players = Optional[list[str]]):
+    def add_guesses(self, exclude_players = Optional[List[str]]):
         
         
 
@@ -93,7 +98,10 @@ class Tournament(BaseModel):
                 if player is None:
                     warnings.warn(f"Could not find player {name}, so cannot add guesses for {phase}")
                 else:
-                    player.games[phase] = self.get_games(row, phase = phase, start_event_index = event_index)
+                    try:
+                        player.games[phase] = self.get_games(row, phase = phase, start_event_index = event_index)
+                    except Exception as e:
+                        raise ValueError(f"problem for player {player.name}")
 
             phase_facit_df = pd.read_csv(f'tips/data/{phase}_RESULTS.csv')
             phase_facit_df.fillna("", inplace=True)
@@ -169,7 +177,48 @@ class Tournament(BaseModel):
                 event_index += 1
                 
         elif phase in ("last_16", "quarter_finals", "semi_finals"):
-            raise NotImplementedError("Knockout stages not implemented yet")
+            for i in range(2, 34, 4):
+                score = []
+                if teams_match := re.search(r' ([A-Za-zÅåÄäÖö]+) *- *([A-Za-zÅåÄäÖö]+)', row.index[i]):
+                    teams = teams_match.groups()
+                else:
+                    raise ValueError(f"Could not find teams in {row.index[i]}")
+                
+                for j in range(2):
+                    score.append(row.iloc[i+j+2])
+                    if team_match := re.search(r'\[(.*)\]', row.index[i+j+2]):
+                        team = team_match.group(1)
+                    else:
+                        raise ValueError(f"Could not find team in {row.index[i+j+2]}")
+                    assert team == teams[j], f"Teams do not match: {team} != {teams[j]}"
+                
+                winner = row.iloc[i]
+                endtime_form = row.iloc[i+1]
+                
+                # Player guesses must have all scores, but facit can be empty
+                if "" in score or "" in (endtime_form, winner):
+                    if not facit:
+                        raise ValueError(f"Empty guess for {teams}")
+                    else:
+                        if not all([s == "" for s in score]):
+                            raise ValueError(f"Facit has only partial score for game: {teams}")
+                        break
+                # print(type(score[0]))
+                endtime = endtime_dict[endtime_form]
+                try:
+                    games.append(Game(
+                    teams = teams,
+                    score = score,
+                    event_index = i,
+                    phase = phase,
+                    facit = facit,
+                    winner = winner,
+                    endtime = endtime
+
+                ))
+                except Exception as e:
+                    raise ValueError(f"bad data {teams},{score},{phase},{winner},{endtime},")
+                event_index += 1
 
         else:
             raise ValueError(f"Unknown phase {phase}")
@@ -228,7 +277,7 @@ class Tournament(BaseModel):
         self.facit.compute_points(self.facit)
         self.max_points = self.facit.total_points
    
-    def build_player_guesses_rst(self, directory = "webpage/source", include:Optional[list[str]] = None):
+    def build_player_guesses_rst(self, directory = "webpage/source", include:Optional[List[str]] = None):
         
         if include is None:
             include = []
@@ -299,7 +348,7 @@ class Tournament(BaseModel):
             for player in players_sorted:
                 f.write(f"\n{player.nick}, {player.total_points}")
 
-def parse_data(directory = "webpage/source", exclude_players: Optional[list[str]] = None):
+def parse_data(directory = "webpage/source", exclude_players: Optional[List[str]] = None):
     t = Tournament()
     t.build_players(exclude_players=exclude_players)
 
