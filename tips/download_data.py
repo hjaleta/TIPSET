@@ -10,6 +10,8 @@ def get_link_dict():
         "group_stage_RESULTS": "https://docs.google.com/spreadsheets/d/1Vc16Px85krZsPlBvbKRLnj4ucKT-jBsxUopydWeBTjM/export?format=csv",
         "last_16_ANSWERS": "https://docs.google.com/spreadsheets/d/1DfnkRl8koShZ1XwlQz9Amo0C0KvGbMklsX1nrhojSMg/export?format=csv",
         "last_16_RESULTS": "https://docs.google.com/spreadsheets/d/1M4XKFPGWqaZ4wCwBh7xpRZHk61X8mx6eOdzwE0hsdA0/export?format=csv",
+        "quarter_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/1um9zy9j1_x4Zmzd2630L3DBwcLggpn5I1iMrhVMLnWc/export?format=csv",
+        "quarter_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1BXsTjZ8jH2RIGqbXG6_f-yetds18pEZRCmPn9Q9wUOs/export?format=csv",
     }
     return json.loads(os.getenv("LINK_DICT"))
 

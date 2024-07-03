@@ -177,7 +177,13 @@ class Tournament(BaseModel):
                 event_index += 1
                 
         elif phase in ("last_16", "quarter_finals", "semi_finals"):
-            for i in range(2, 34, 4):
+            if phase == "last_16":
+                n_games = 8
+            if phase == "quarter_finals":
+                n_games = 4
+            if phase == "semi_finals":
+                n_games = 2     
+            for i in range(2, 4*n_games, 4):
                 score = []
                 if teams_match := re.search(r' ([A-Za-zÅåÄäÖö]+) *- *([A-Za-zÅåÄäÖö]+)', row.index[i]):
                     teams = teams_match.groups()
