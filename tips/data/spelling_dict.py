@@ -24,4 +24,5 @@ spelling_dict = {
     "Isac": "Isac ekblom",
     "Yuexin": "Yuexin Zhou",
     "saz sara": "Sara Whittaker",
+    "Erik hallin": "Erik Hallin",
 }
