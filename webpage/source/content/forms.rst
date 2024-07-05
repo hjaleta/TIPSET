@@ -9,7 +9,7 @@ Här finns det länkar till de olika svarsformulären.
 
 `Åttondelsfinal <https://forms.gle/UE6Bp1uchNPKJ6Lc9>`_
 
-Kvartsfinal *(tillgänglig efter åttondelsfinalerna)*
+`Kvartsfinal <https://forms.gle/CQuu7rF7ySKZ9s7J8>`_
 
 Semifinal *(tillgänglig efter kvartsfinalerna)*
 
