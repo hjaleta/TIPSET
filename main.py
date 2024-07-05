@@ -6,7 +6,7 @@ import json
 
 DOWNLOAD_DATA = os.getenv("DOWNLOAD_DATA", "false")
 EXCLUDE_PLAYERS = ["Test1", "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Test 17"]
-INCLUDE_PHASES = ["group_stage", "bonus", "last_16"]
+INCLUDE_PHASES = ["group_stage", "bonus", "last_16", "quarter_finals"]
 
 
 IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
