@@ -83,11 +83,12 @@ class Tournament(BaseModel):
             
             try:
                 phase_df = pd.read_csv(f'tips/data/{phase}_ANSWERS.csv')
-                print(f"Adding guesses for phase {phase}")
+                # print(f"Adding guesses for phase {phase}")
             except FileNotFoundError:
                 print(f"Could not find file for phase {phase}")
                 continue
-
+            
+            n_players = 0
             for index, row in phase_df.iterrows():
                 name = row["Vad heter du? (För- och efternamn)"].strip()
                 if name in exclude_players:
@@ -100,8 +101,11 @@ class Tournament(BaseModel):
                 else:
                     try:
                         player.games[phase] = self.get_games(row, phase = phase, start_event_index = event_index)
+                        n_players += 1
                     except Exception as e:
                         raise ValueError(f"problem for player {player.name}")
+
+            print(f"Processed {n_players} players for phase {phase}")
 
             phase_facit_df = pd.read_csv(f'tips/data/{phase}_RESULTS.csv')
             phase_facit_df.fillna("", inplace=True)
