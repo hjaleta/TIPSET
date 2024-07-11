@@ -4,7 +4,7 @@ import pandas as pd
 import re
 import textwrap
 import os
-from tips.data.spelling_dict import spelling_dict
+from tips.config import spelling_dict
 from tips.util import rst_toctree, rst_csv_table
 from typing import Optional, List
 from datetime import datetime, timedelta

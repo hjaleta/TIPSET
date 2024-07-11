@@ -3,13 +3,12 @@ from tips.parse_data import parse_data
 from datetime import datetime
 import os
 import json
+from tips.config import (DOWNLOAD_DATA, 
+                         EXCLUDE_PLAYERS, 
+                         INCLUDE_PHASES, 
+                         IS_GITHUB_ACTION)
 
-DOWNLOAD_DATA = os.getenv("DOWNLOAD_DATA", "false")
-EXCLUDE_PLAYERS = ["Test1", "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Test 17"]
-INCLUDE_PHASES = ["group_stage", "bonus", "last_16", "quarter_finals", "semi_finals"]
 
-
-IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
 
 print(f"DOWNLOAD_DATA: {DOWNLOAD_DATA}")
 
