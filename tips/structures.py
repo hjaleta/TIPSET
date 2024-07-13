@@ -137,11 +137,9 @@ class Bonus(BaseModel):
     question: str
     answer: Optional[str] = None
     event_index: int
-    points : Optional[int] = None
+    points : Optional[int] | Literal["-"]
     facit : bool = False
     
-        
-
 
 class Player(BaseModel):
 
@@ -173,9 +171,12 @@ class Player(BaseModel):
             self.point_list.append((table.event_index, table.points))
             point_and_event_index.append((table.event_index, table.points))
         
-        self.total_points = sum([points for _, points in point_and_event_index])
+        for bonus in self.bonus_questions:
+            points = bonus.points if isinstance(bonus.points, int) else 0
+            self.point_list.append((bonus.event_index, points))
+            point_and_event_index.append((bonus.event_index, points))
 
-        
+        self.total_points = sum([points for _, points in point_and_event_index])
 
     def build_guess_rst(self, directory: str = "webpage/source/content/players", include = None):
 
@@ -191,9 +192,16 @@ class Player(BaseModel):
 
         if self.bonus_questions and 'bonus' in include:
             with open(os.path.join(player_dir, 'bonus_table.csv'), 'w') as f:
-                f.write("Fråga,Svar\n")
+                f.write("Fråga,Svar,Poäng\n")
                 for bonus in self.bonus_questions:
-                    f.write(f'"{bonus.question}","{bonus.answer}"\n')
+                    if bonus.points is None:
+                        points = "?"
+                    elif bonus.points == "-":
+                        points = "X"
+                    else:
+                        points = bonus.points
+
+                    f.write(f'"{bonus.question}","{bonus.answer}","{points}"\n')
                 
             with open(os.path.join(player_dir, 'bonus.rst'), 'w') as f:
                 f.write(textwrap.dedent(
@@ -203,7 +211,7 @@ class Player(BaseModel):
 
                 """) + rst_csv_table(
                     "bonus_table.csv",
-                    directives = {"widths": "70, 30", "header-rows": 1}
+                    directives = {"widths": "65, 30, 5", "header-rows": 1}
                 )
                 )
             

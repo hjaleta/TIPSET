@@ -127,19 +127,20 @@ class Tournament(BaseModel):
                 event_index = self.players[0].highest_event_index + 1
 
         # Add bonus
-        bonus_df = pd.read_csv('tips/data/bonus_ANSWERS.csv')
-        for index, row in bonus_df.iterrows():
-            name = row["Vad heter du? (För- och efternamn)"].strip()
-            if name in exclude_players:
+        bonus_df_dict = pd.read_excel("tips/data/bonus_Q_AND_A.xlsx", sheet_name = None)
+        for player_name, player_sheet_df in bonus_df_dict.items():
+            # name = row["Vad heter du? (För- och efternamn)"].strip()
+            player_sheet_df.fillna("", inplace=True)
+            if player_name in exclude_players:
                 continue
-            player = self.get_player(name)
+            player = self.get_player(player_name)
 
             if player is None:
                 warnings.warn(f"Could not find player {name}, so cannot add bonus guesses")
             else:
-                player.bonus_questions = self.get_bonus(row, start_event_index = event_index)
+                player.bonus_questions = self.get_bonus(player_sheet_df, start_event_index = event_index)
         
-        self.facit.bonus_questions = self.get_bonus(phase_facit_df.iloc[0], start_event_index = event_index, facit = True)
+        # self.facit.bonus_questions = self.get_bonus(phase_facit_df.iloc[0], start_event_index = event_index, facit = True)
 
 
     def get_games(self, row, phase, start_event_index, facit = False):
@@ -169,6 +170,7 @@ class Tournament(BaseModel):
                         if not all([s == "" for s in score]):
                             raise ValueError(f"Facit has only partial score for game: {teams}")
                         break
+                    
                 # print(type(score[0]))
 
                 games.append(Game(
@@ -266,13 +268,18 @@ class Tournament(BaseModel):
                 
         return group_tables
 
-    def get_bonus(self, row, start_event_index, facit = False):
+    def get_bonus(self, player_df, start_event_index, facit = False):
         bonus = []
         event_index = start_event_index
-        for i in range(2, len(row)):
+        for index, row in player_df.iterrows():
+            points = row["Points"] 
+            if points == "":
+                points = None
+        
             bonus.append(Bonus(
-                question = row.index[i],
-                answer = str(row.iloc[i]),
+                question = row["Question"],
+                answer = row["Answer"],
+                points = points,
                 event_index = event_index,
                 facit = facit
             ))

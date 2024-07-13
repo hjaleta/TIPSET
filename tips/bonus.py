@@ -32,23 +32,3 @@ with pd.ExcelWriter('tips/data/bonus_correction_form.xlsx') as writer:  # doctes
         player_bonus_df = pd.DataFrame.from_dict(df_dict)
 
         player_bonus_df.to_excel(writer, sheet_name=player_name)
-
-
-    #     player = self.get_player(name)
-
-    #     if player is None:
-    #         warnings.warn(f"Could not find player {name}, so cannot add bonus guesses")
-    #     else:
-    #         player.bonus_questions = self.get_bonus(row, start_event_index = event_index)
-    
-    # self.facit.bonus_questions = self.get_bonus(phase_facit_df.iloc[0], start_event_index = event_index, facit = True)
-
-
-    # for player in ...:
-
-    #     player_bonus_df = ...
-
-    #     player_bonus_df.to_exc
-        
-    #     df1.to_excel(writer, sheet_name='Sheet_name_1')
-    #     df2.to_excel(writer, sheet_name='Sheet_name_2'
