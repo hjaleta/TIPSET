@@ -1,0 +1,19 @@
+
+Välkomna till EM-Tipset 2024!
+==================================
+
+.. *(For English, go to the bottom of the page.)*
+
+.. csv-table:: Poängställning (Uppdaterad 16 July 22:27)
+    :file: content/leaderboard.csv
+    :header-rows: 1
+    :widths: 70, 30
+
+
+.. toctree::
+    :hidden: 
+    :maxdepth: 1
+
+    content/rules
+    content/forms
+    content/players/index

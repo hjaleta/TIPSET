@@ -1,0 +1,33 @@
+
+Gruppspel - Tabeller
+--------------------
+
+.. csv-table:: Grupp A  -  Tjänade poäng: 2
+    :file: table_A.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp B  -  Tjänade poäng: 2
+    :file: table_B.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp C  -  Tjänade poäng: 2
+    :file: table_C.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp D  -  Tjänade poäng: 1
+    :file: table_D.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp E  -  Tjänade poäng: 0
+    :file: table_E.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp F  -  Tjänade poäng: 2
+    :file: table_F.csv
+    :header-rows: 1
+    :widths: 10, 90

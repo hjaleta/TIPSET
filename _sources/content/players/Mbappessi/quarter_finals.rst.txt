@@ -1,0 +1,8 @@
+
+Kvartsfinaler
+-------------
+
+.. csv-table:: None
+    :file: quarter_finals_table.csv
+    :header-rows: 1
+    :widths: 60,10,10,10,10

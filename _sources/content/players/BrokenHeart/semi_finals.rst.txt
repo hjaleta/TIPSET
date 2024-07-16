@@ -1,0 +1,8 @@
+
+Semifinaler
+-----------
+
+.. csv-table:: None
+    :file: semi_finals_table.csv
+    :header-rows: 1
+    :widths: 60,10,10,10,10

@@ -1,0 +1,625 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Välkomna till EM-Tipset 2024! &#8212; TIPSET 0.1 documentation</title>
+
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/css/ansys_sphinx_theme.css?v=a362721a" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+ 
+<link href="_static/css/breadcrumbs.css" rel="stylesheet" />
+
+    <script src="_static/documentation_options.js?v=1b390748"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/table.js?v=b64f5182"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Regler och Information" href="content/rules.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container"><!-- Debugging: html_theme_options =  -->
+
+<!-- If there is no MiliSearch enabled, use the PyData search -->
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+   
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/TIPSET-logo-white.svg" class="logo__image only-light" alt="TIPSET 0.1 documentation - Home"/>
+    <script>document.write(`<img src="_static/TIPSET-logo-white.svg" class="logo__image only-dark" alt="TIPSET 0.1 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="content/rules.html">
+                        Regler och Information
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="content/forms.html">
+                        Svarsformulär
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="content/players/index.html">
+                        Deltagare
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+    
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="content/rules.html">
+                        Regler och Information
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="content/forms.html">
+                        Svarsformulär
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="content/players/index.html">
+                        Deltagare
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="#"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+      
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="valkomna-till-em-tipset-2024">
+<h1>Välkomna till EM-Tipset 2024!<a class="headerlink" href="#valkomna-till-em-tipset-2024" title="Link to this heading">#</a></h1>
+<table class="table" id="id1">
+<caption><span class="caption-text">Poängställning (Uppdaterad 16 July 22:27)</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 70.0%" />
+<col style="width: 30.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Namn</p></th>
+<th class="head"><p>Poäng (Max 141)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Thomas</p></td>
+<td><p>72</p></td>
+</tr>
+<tr class="row-odd"><td><p>Oreda</p></td>
+<td><p>68</p></td>
+</tr>
+<tr class="row-even"><td><p>Abrovinschen</p></td>
+<td><p>65</p></td>
+</tr>
+<tr class="row-odd"><td><p>Maestro</p></td>
+<td><p>63</p></td>
+</tr>
+<tr class="row-even"><td><p>Jo då så att</p></td>
+<td><p>63</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pastorn62</p></td>
+<td><p>62</p></td>
+</tr>
+<tr class="row-even"><td><p>Orkamedetta</p></td>
+<td><p>60</p></td>
+</tr>
+<tr class="row-odd"><td><p>pastasalad</p></td>
+<td><p>60</p></td>
+</tr>
+<tr class="row-even"><td><p>Waldes</p></td>
+<td><p>60</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cristiano Ronaldinho</p></td>
+<td><p>60</p></td>
+</tr>
+<tr class="row-even"><td><p>Arre</p></td>
+<td><p>60</p></td>
+</tr>
+<tr class="row-odd"><td><p>Riccardinho</p></td>
+<td><p>59</p></td>
+</tr>
+<tr class="row-even"><td><p>Eden Falzar</p></td>
+<td><p>59</p></td>
+</tr>
+<tr class="row-odd"><td><p>Crips</p></td>
+<td><p>58</p></td>
+</tr>
+<tr class="row-even"><td><p>Joakim Holtz</p></td>
+<td><p>58</p></td>
+</tr>
+<tr class="row-odd"><td><p>LongJohnSilver</p></td>
+<td><p>57</p></td>
+</tr>
+<tr class="row-even"><td><p>Awaken Beerus</p></td>
+<td><p>57</p></td>
+</tr>
+<tr class="row-odd"><td><p>Class on Grass</p></td>
+<td><p>57</p></td>
+</tr>
+<tr class="row-even"><td><p>Viggo</p></td>
+<td><p>56</p></td>
+</tr>
+<tr class="row-odd"><td><p>elispakkiosetta</p></td>
+<td><p>56</p></td>
+</tr>
+<tr class="row-even"><td><p>BrokenHeart</p></td>
+<td><p>56</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ricardeau</p></td>
+<td><p>56</p></td>
+</tr>
+<tr class="row-even"><td><p>Slaktaren</p></td>
+<td><p>56</p></td>
+</tr>
+<tr class="row-odd"><td><p>GW</p></td>
+<td><p>55</p></td>
+</tr>
+<tr class="row-even"><td><p>Aguante El Diego y Lionel</p></td>
+<td><p>55</p></td>
+</tr>
+<tr class="row-odd"><td><p>soulinho</p></td>
+<td><p>54</p></td>
+</tr>
+<tr class="row-even"><td><p>Trollhättan</p></td>
+<td><p>54</p></td>
+</tr>
+<tr class="row-odd"><td><p>Saz</p></td>
+<td><p>54</p></td>
+</tr>
+<tr class="row-even"><td><p>Kotten</p></td>
+<td><p>54</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lion of Delft</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-even"><td><p>Knugen</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-odd"><td><p>Edvin van der sar</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-even"><td><p>Marco van Bossen</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-odd"><td><p>ISAC.E</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-even"><td><p>Ali</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-odd"><td><p>Of course</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-even"><td><p>Hjal van der Mar</p></td>
+<td><p>52</p></td>
+</tr>
+<tr class="row-odd"><td><p>Britten i Barnängen</p></td>
+<td><p>51</p></td>
+</tr>
+<tr class="row-even"><td><p>Mbappessi</p></td>
+<td><p>49</p></td>
+</tr>
+<tr class="row-odd"><td><p>Why in Swedish re malaka?</p></td>
+<td><p>49</p></td>
+</tr>
+<tr class="row-even"><td><p>Bigman</p></td>
+<td><p>48</p></td>
+</tr>
+<tr class="row-odd"><td><p>Nisse</p></td>
+<td><p>47</p></td>
+</tr>
+<tr class="row-even"><td><p>Anna</p></td>
+<td><p>43</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ekstravaganza</p></td>
+<td><p>42</p></td>
+</tr>
+<tr class="row-even"><td><p>Trimoni-a-vento</p></td>
+<td><p>42</p></td>
+</tr>
+<tr class="row-odd"><td><p>El Profesor</p></td>
+<td><p>40</p></td>
+</tr>
+<tr class="row-even"><td><p>Bajenrille</p></td>
+<td><p>36</p></td>
+</tr>
+<tr class="row-odd"><td><p>First Klas</p></td>
+<td><p>28</p></td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="content/rules.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Regler och Information</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+<!-- If there is no fix edit button function, use the PyData edit-this-button-->
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/index.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, hjaleta.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.5.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  0.16.6. <br />Last updated on
+  <span id="date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var lastModifiedDate = new Date(document.lastModified);
+  var date = lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("date").innerHTML = date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
