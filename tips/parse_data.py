@@ -1,4 +1,4 @@
-from tips.structures import Game, GroupTable, Bonus, Player, FinalGame
+from tips.structures import Game, GroupTable, Bonus, Player, FinalGame, Phase
 from pydantic import BaseModel
 import pandas as pd
 import re
@@ -321,14 +321,14 @@ class Tournament(BaseModel):
         
         return bonus
     
-    def compute_points(self):
+    def compute_points(self, include_phases):
         for player in self.players:
-            player.compute_points(self.facit)
+            player.compute_points(self.facit, include_phases)
 
-        self.facit.compute_points(self.facit)
+        self.facit.compute_points(self.facit, include_phases)
         self.max_points = self.facit.total_points
    
-    def build_player_guesses_rst(self, directory = "webpage/source", include:Optional[List[str]] = None):
+    def build_player_guesses_rst(self, directory = "webpage/source", include:Optional[List[Phase]] = None):
         
         if include is None:
             include = []
@@ -408,13 +408,17 @@ class Tournament(BaseModel):
             for player_tuple in players_tuples_sorted:
                 f.write(f"\n{player_tuple[2]}, {player_tuple[0]}")
 
-def parse_data(directory = "webpage/source", exclude_players: Optional[List[str]] = None):
+def parse_data(directory = "webpage/source", exclude_players: Optional[List[str]] = None, include_phases:Optional[List[Phase]] = None):
+
+    if include_phases is None:
+        include_phases = []
+
     t = Tournament()
     t.build_players(exclude_players=exclude_players)
 
     t.add_guesses(exclude_players=exclude_players)
 
-    t.compute_points()
+    t.compute_points(include_phases)
 
     return t
 

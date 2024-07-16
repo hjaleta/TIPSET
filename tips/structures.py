@@ -200,28 +200,31 @@ class Player(BaseModel):
     total_points: Optional[int] = None
     is_facit : bool = False
 
-    def compute_points(self, facit_player: 'Player'):
+    def compute_points(self, facit_player: 'Player', include_phases):
 
         assert facit_player.is_facit
 
         point_and_event_index = []
 
         for phase, games in self.games.items():
-            for game, facit_game in zip(games, facit_player.games[phase]):
-                game.set_points(facit_game)
-                point_and_event_index.append((game.event_index, game.points))
+            if phase in include_phases:
+                for game, facit_game in zip(games, facit_player.games[phase]):
+                    game.set_points(facit_game)
+                    point_and_event_index.append((game.event_index, game.points))
         
-        for table, facit_table in zip(self.group_tables, facit_player.group_tables):
-            table.set_points(facit_table)
-            self.point_list.append((table.event_index, table.points))
-            point_and_event_index.append((table.event_index, table.points))
+        if "group_stage" in include_phases:
+            for table, facit_table in zip(self.group_tables, facit_player.group_tables):
+                table.set_points(facit_table)
+                self.point_list.append((table.event_index, table.points))
+                point_and_event_index.append((table.event_index, table.points))
         
-        for bonus in self.bonus_questions:
-            points = bonus.points if isinstance(bonus.points, int) else 0
-            self.point_list.append((bonus.event_index, points))
-            point_and_event_index.append((bonus.event_index, points))
+        if "bonus" in include_phases:
+            for bonus in self.bonus_questions:
+                points = bonus.points if isinstance(bonus.points, int) else 0
+                self.point_list.append((bonus.event_index, points))
+                point_and_event_index.append((bonus.event_index, points))
 
-        self.total_points = sum([points for _, points in point_and_event_index])
+        self.total_points = sum([point for _, point in point_and_event_index])
 
     def build_guess_rst(self, directory: str = "webpage/source/content/players", include = None):
 

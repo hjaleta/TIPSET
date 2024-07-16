@@ -23,7 +23,7 @@ else:
 
 
 # Step 2 - Calculate the scores
-tournament = parse_data(exclude_players=EXCLUDE_PLAYERS)
+tournament = parse_data(exclude_players=EXCLUDE_PLAYERS, include_phases = INCLUDE_PHASES)
 
 # Step 3 (maybe) - Create statistics plots
 
