@@ -2,7 +2,7 @@ import os
 
 DOWNLOAD_DATA = os.getenv("DOWNLOAD_DATA", "false")
 EXCLUDE_PLAYERS = ["Test1", "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Test 17"]
-INCLUDE_PHASES = ["group_stage", "bonus", "last_16", "quarter_finals", "semi_finals"]
+INCLUDE_PHASES = ["group_stage", "bonus", "last_16", "quarter_finals", "semi_finals", "final"]
 IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
 
 # Dictionary of spelling mistakes from participants
@@ -35,3 +35,13 @@ spelling_dict = {
     "Thomas Å": "Thomas Berg",
     "Saz": "Sara Whittaker",
 }
+
+endtime_dict = {
+    "Efter 90 minuter": "90",
+    "Efter 120 minuter": "120",
+    "Efter straffar": "penalties"
+}
+
+endtime_dict_inv = {val: key for key, val in endtime_dict.items()}
+
+TOTAL_GOALS_IN_TOURNAMENT = 117

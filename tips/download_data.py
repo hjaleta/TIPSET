@@ -14,7 +14,9 @@ def get_link_dict():
         "quarter_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/1um9zy9j1_x4Zmzd2630L3DBwcLggpn5I1iMrhVMLnWc/export?format=csv",
         "quarter_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1BXsTjZ8jH2RIGqbXG6_f-yetds18pEZRCmPn9Q9wUOs/export?format=csv",
         "semi_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/1iK3YSk8KpMhSx2wayyFty4dXwx1a4jHKtPoUOe-oMP8/export?format=csv",
-        "semi_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1ha4CCQUEh6eMnRCOAReunnHjC4XPbGS-xVmZ77VgJKI/export?format=csv"
+        "semi_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1ha4CCQUEh6eMnRCOAReunnHjC4XPbGS-xVmZ77VgJKI/export?format=csv", 
+        "final_ANSWERS": "https://docs.google.com/spreadsheets/d/15UNX9Oi3_IC8UQthggdiQEpS_2pOaxAFrabzkmKQnKQ/export?format=csv",
+        "final_RESULTS": "https://docs.google.com/spreadsheets/d/1a-b1YPV_wBqNuyrcbDb9WguxjRrNOY47tew6TNQL24A/export?format=csv"
     }
 
 def download_data():

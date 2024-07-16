@@ -3,6 +3,7 @@ from typing import Literal, Optional, Tuple, Dict, List
 import os
 import textwrap
 from tips.util import rst_toctree, rst_csv_table
+from tips.config import endtime_dict_inv
 
 # Define the groups
 groups = {
@@ -106,6 +107,50 @@ class Game(BaseModel):
             points += 1
            
         self.points = points
+
+
+class FinalGame(Game):
+    corner_range: tuple[int, int]
+    fair_play_points: tuple[tuple[int,int], tuple[int, int]]
+    scorers: tuple[str, ...]
+    q_a_p_dict: Optional[dict[str, tuple[str, int]]] = None
+
+
+    def set_points(self, facit_game:'FinalGame'):
+        
+        self.points = 0
+        self.q_a_p_dict = {}
+        
+        winner_points = int(self.winner == facit_game.winner)
+        self.q_a_p_dict["Vilka vinner EM?"] = (self.winner, winner_points)
+        self.points += winner_points
+
+        score_points = int(self.score == facit_game.score)
+        self.q_a_p_dict["Hur slutar matchen?"] = (str(self.score[0]) + "-" + str(self.score[1]), score_points)
+        self.points += score_points
+
+        endtime_points = int(self.endtime==facit_game.endtime)
+        self.q_a_p_dict["När slutar matchen?"] = (endtime_dict_inv[self.endtime], endtime_points)
+        self.points += endtime_points
+
+        corner_points = int(self.corner_range == facit_game.corner_range)
+        self.q_a_p_dict["Hur många hörnor blir det i matchen?"] = (str(self.corner_range[0]) + "-" + str(self.corner_range[1]), corner_points)
+        self.points += corner_points
+
+        for i in range(2):
+            fp_points_i = int(self.fair_play_points[i] == facit_game.fair_play_points[i])
+            self.q_a_p_dict[f"Hur många fair play poäng får {self.teams[i]} i matchen?"] = (str(self.fair_play_points[i][0]) + "-" + str(self.fair_play_points[i][1]), fp_points_i)
+            self.points += fp_points_i
+
+        if len(self.scorers) <= 3:
+            scorer_points = sum(int(scorer in facit_game.scorers) for scorer in self.scorers)
+        else:
+            scorer_points = 0
+        
+        self.q_a_p_dict["Vilka spelare gör mål i matchen?"] = ( " & ".join(self.scorers), scorer_points)
+        self.points += scorer_points
+
+        
 
 class GroupTable(BaseModel):
     teams_in_order : Tuple[Team, Team, Team, Team]
@@ -255,7 +300,7 @@ class Player(BaseModel):
             'last_16': ('Åttondelsfinaler', (60, 10, 10, 10, 10)),
             'quarter_finals': ('Kvartsfinaler', (60, 10, 10, 10, 10)),
             'semi_finals': ('Semifinaler', (60, 10, 10, 10, 10)),
-            'final': ('Final', (60, 10, 10, 10, 10))
+            'final': ('Final', (40, 50, 10))
         }
 
         for phase, games in self.games.items():
@@ -296,6 +341,14 @@ class Player(BaseModel):
                         points = '?' if game.points is None else game.points
                         endtime = "Straffar" if game.endtime == 'penalties' else f"{game.endtime} min"
                         f.write(f"{game.teams[0]} - {game.teams[1]},{game.score[0]} - {game.score[1]},{endtime},{game.winner},{points}\n")
+
+            elif phase == "final":
+                # f = self.games[phase][0]
+                with open(table_file_path, 'w') as f:
+                    f.write("Fråga,Svar,Tjänade Poäng\n")
+                    for question, (answer, points) in self.games["final"][0].q_a_p_dict.items():
+                        f.write(f"{question},{answer},{points}\n")
+
 
         player_index_rst_string = textwrap.dedent(
         f"""

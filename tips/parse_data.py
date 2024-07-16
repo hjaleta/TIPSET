@@ -1,20 +1,16 @@
-from tips.structures import Game, GroupTable, Bonus, Player
+from tips.structures import Game, GroupTable, Bonus, Player, FinalGame
 from pydantic import BaseModel
 import pandas as pd
 import re
 import textwrap
 import os
-from tips.config import spelling_dict
+from tips.config import spelling_dict, endtime_dict, TOTAL_GOALS_IN_TOURNAMENT
 from tips.util import rst_toctree, rst_csv_table
 from typing import Optional, List
 from datetime import datetime, timedelta
 import warnings
 
-endtime_dict = {
-    "Efter 90 minuter": "90",
-    "Efter 120 minuter": "120",
-    "Efter straffar": "penalties"
-}
+
 
 class Tournament(BaseModel):
     players: List[Player] = []
@@ -90,7 +86,11 @@ class Tournament(BaseModel):
             
             n_players = 0
             for index, row in phase_df.iterrows():
-                name = row["Vad heter du? (För- och efternamn)"].strip()
+                try:
+                    name = row["Vad heter du? (För- och efternamn)"].strip()
+                except KeyError:
+                    name = row["Vad heter du? (Förnamn + efternamn)"].strip()
+                
                 if name in exclude_players:
                     continue
 
@@ -170,7 +170,7 @@ class Tournament(BaseModel):
                         if not all([s == "" for s in score]):
                             raise ValueError(f"Facit has only partial score for game: {teams}")
                         break
-                    
+
                 # print(type(score[0]))
 
                 games.append(Game(
@@ -221,7 +221,7 @@ class Tournament(BaseModel):
                     games.append(Game(
                     teams = teams,
                     score = score,
-                    event_index = i,
+                    event_index = event_index,
                     phase = phase,
                     facit = facit,
                     winner = winner,
@@ -231,6 +231,40 @@ class Tournament(BaseModel):
                 except Exception as e:
                     raise ValueError(f"bad data {teams},{score},{phase},{winner},{endtime},")
                 event_index += 1
+
+        elif phase == "final":
+            winner = row.iloc[2]
+            endtime = row.iloc[3]
+
+            team1 = re.search(r"\[([A-Za-zÅåÄäÖö]+)\]", row.index[4]).group(1)
+            team2 = re.search(r"\[([A-Za-zÅåÄäÖö]+)\]", row.index[5]).group(1)
+
+            score = tuple([int(row.iloc[i]) for i in (4,5)])
+
+            corner_range = tuple( int(c) for c in row.iloc[6].split("-"))
+            fair_play_range1 = tuple( int(f) for f in row.iloc[7].split("-"))
+            fair_play_range2 = tuple( int(f) for f in row.iloc[8].split("-"))
+
+            scorers = row.iloc[9].split(", ")
+
+            endtime = endtime_dict[endtime]
+            try:
+                games.append(FinalGame(
+                teams = (team1,team2),
+                score = score,
+                event_index = start_event_index,
+                phase = phase,
+                facit = facit,
+                winner = winner,
+                endtime = endtime,
+                corner_range = corner_range,
+                fair_play_points = (fair_play_range1, fair_play_range2),
+                scorers = scorers
+            ))
+            except Exception as e:
+                raise
+                raise ValueError(f"bad data {teams},{score},{phase},{winner},{endtime},")
+            event_index += 1
 
         else:
             raise ValueError(f"Unknown phase {phase}")
@@ -331,7 +365,16 @@ class Tournament(BaseModel):
 
     def build_rst_home_page_and_leaderboard(self, directory = "webpage/source", is_github_action:bool = False):
         
-        players_sorted = sorted(self.players, key = lambda player: (-player.total_points, player.nick.lower()), reverse = False)
+        player_tuples = []
+
+        for player in self.players:
+            score = player.total_points
+            nick = player.nick
+            knockout_question_answer = int(re.search(r"(\d+)", player.bonus_questions[-2].answer).group(1))
+            knockout_question_diff = abs(knockout_question_answer - TOTAL_GOALS_IN_TOURNAMENT)
+            player_tuples.append((score, knockout_question_diff, nick))
+
+        players_tuples_sorted = sorted(player_tuples, key = lambda player_tuple: (-player_tuple[0], player_tuple[1],  player_tuple[2].lower()), reverse = False)
         
         now = datetime.now()
         if is_github_action:
@@ -362,8 +405,8 @@ class Tournament(BaseModel):
         
         with open(f"{directory}/content/leaderboard.csv", "w") as f:
             f.write(f"Namn, Poäng (Max {self.max_points})")
-            for player in players_sorted:
-                f.write(f"\n{player.nick}, {player.total_points}")
+            for player_tuple in players_tuples_sorted:
+                f.write(f"\n{player_tuple[2]}, {player_tuple[0]}")
 
 def parse_data(directory = "webpage/source", exclude_players: Optional[List[str]] = None):
     t = Tournament()
