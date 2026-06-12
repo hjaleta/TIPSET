@@ -2,8 +2,14 @@ import os
 
 DOWNLOAD_DATA = os.getenv("DOWNLOAD_DATA", "false")
 EXCLUDE_PLAYERS = ["Test1", "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Test 17"]
-INCLUDE_PHASES = ["group_stage", "last_16", "quarter_finals", "semi_finals", "final", "bonus"]
+INCLUDE_PHASES = ["group_stage", 
+                #   "last_16", "quarter_finals", "semi_finals", "final", "bonus"
+                  ]
 IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
+
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(REPO_ROOT, "data")
 
 # Dictionary of spelling mistakes from participants
 # should be on form
@@ -12,28 +18,15 @@ IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
 #     "wtong speeling 2": "correct spelling 2",
 # }
 spelling_dict = {
-    "Test 1": "Test1",
-    "Antoine Pomari": "Antoine",
-    "Jo då så att": "Erik Hallin",
-    "Ali": "Ali Sentissi",
-    "ThomasB": "Thomas Berg",
-    "Arthur Cherry (Awaken Beerus)": "Arthur Cherry",
-    "Arvid Thomasson, Arre": "Arvid Thomasson",
-    "Isac Korduner": "Isac korduner",
-    "Christian Möller": "Christian möller",
-    "Isaac Ekblom": "Isac ekblom",
-    "Cristiano Ronaldinho": "Kenji Capannelli",
-    "Waldemar Hj Blomster": "Waldemar Blomster",
-    "sara": "Sara Whittaker",
-    "Tomas Tisberger": "Tomás Tisberger",
-    "Anastasis": "Anastasis Dimitriadis",
-    "Isac": "Isac ekblom",
-    "Yuexin": "Yuexin Zhou",
-    "saz sara": "Sara Whittaker",
-    "Erik hallin": "Erik Hallin",
-    "Isac Ekblom": "Isac ekblom",
-    "Thomas Å": "Thomas Berg",
-    "Saz": "Sara Whittaker",
+
+    'David Oredsson  (Oreda)': 'David Oredsson',
+    'Gustav wickström': 'Gustav Wickström',
+    'Inga Tumimnaite': 'Inga Tuminaite',
+    'Isac Ekblom  (EM2026)': 'Isac Ekblom',
+    'Lucas Fernandez (Lucho)': 'Lucas Fernandez',
+    'Maxime clauzier': 'Maxime Clauzier',
+    'Viggo': 'Viggo Nathorst-Böös',
+    'Martin Pehrsson ( Killer Joe )': 'Martin Pehrsson',
 }
 
 endtime_dict = {
@@ -44,4 +37,4 @@ endtime_dict = {
 
 endtime_dict_inv = {val: key for key, val in endtime_dict.items()}
 
-TOTAL_GOALS_IN_TOURNAMENT = 117
+TOTAL_GOALS_IN_TOURNAMENT = None
