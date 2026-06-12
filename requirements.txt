@@ -2,5 +2,6 @@ pandas
 numpy
 openpyxl
 matplotlib
-ansys-sphinx-theme
+#ansys-sphinx-theme
+sphinx-breeze-theme
 pydantic == 2.7.1
