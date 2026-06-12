@@ -1,16 +1,19 @@
-from tips.structures import Game, GroupTable, Bonus, Player, FinalGame, Phase
+from tips.structures import Game, GroupTable, Bonus, Player, FinalGame, Phase, all_team_characters, groups
 from pydantic import BaseModel
 import pandas as pd
 import re
 import textwrap
 import os
-from tips.config import spelling_dict, endtime_dict, TOTAL_GOALS_IN_TOURNAMENT
+from tips.config import (spelling_dict, endtime_dict, 
+                         DATA_DIR,
+                          TOTAL_GOALS_IN_TOURNAMENT
+                         )
 from tips.util import rst_toctree, rst_csv_table
 from typing import Optional, List
 from datetime import datetime, timedelta
 import warnings
 
-
+N_GROUP_STAGE_GAMES = 6 * len(groups) # 6 games per group
 
 class Tournament(BaseModel):
     players: List[Player] = []
@@ -21,7 +24,7 @@ class Tournament(BaseModel):
         
         print(f"EXCLUDING PLAYERS: {exclude_players}")
 
-        group_stage_df = pd.read_csv('tips/data/group_stage_ANSWERS.csv')
+        group_stage_df = pd.read_csv(f'{DATA_DIR}/group_stage_ANSWERS.csv')
         # print(group_stage_df)
 
         if exclude_players is None:
@@ -43,7 +46,7 @@ class Tournament(BaseModel):
                 self.players.append(player)
         
         
-        facit_data_df = pd.read_csv('tips/data/group_stage_RESULTS.csv')
+        facit_data_df = pd.read_csv(f'{DATA_DIR}/group_stage_RESULTS.csv')
         self.facit = Player(
             name = facit_data_df.iloc[0]["Vad heter du? (För- och efternamn)"],
             nick = facit_data_df.iloc[0]["Vad vill du ha för smeknamn i tipset?"],
@@ -78,7 +81,7 @@ class Tournament(BaseModel):
         for phase in ['group_stage', 'last_16', 'quarter_finals', 'semi_finals', 'final']:
             
             try:
-                phase_df = pd.read_csv(f'tips/data/{phase}_ANSWERS.csv')
+                phase_df = pd.read_csv(f'{DATA_DIR}/{phase}_ANSWERS.csv')
                 # print(f"Adding guesses for phase {phase}")
             except FileNotFoundError:
                 print(f"Could not find file for phase {phase}")
@@ -105,10 +108,10 @@ class Tournament(BaseModel):
                     except Exception as e:
                         raise ValueError(f"problem for player {player.name}")
 
-            print(f"Processed {n_players} players for phase {phase}")
+            print(f"Processed {n_players} players for phase {phase}: {[player.name for player in self.players if phase in player.games]}")
 
-            phase_facit_df = pd.read_csv(f'tips/data/{phase}_RESULTS.csv')
-            phase_facit_df.fillna("", inplace=True)
+            phase_facit_df = pd.read_csv(f'{DATA_DIR}/{phase}_RESULTS.csv')
+
             self.facit.games[phase] = self.get_games(phase_facit_df.iloc[0], phase = phase, start_event_index = event_index, facit = True)
             
             event_index = self.players[0].highest_event_index + 1
@@ -127,18 +130,19 @@ class Tournament(BaseModel):
                 event_index = self.players[0].highest_event_index + 1
 
         # Add bonus
-        bonus_df_dict = pd.read_excel("tips/data/bonus_Q_AND_A.xlsx", sheet_name = None)
-        for player_name, player_sheet_df in bonus_df_dict.items():
+        bonus_df = pd.read_csv(f'{DATA_DIR}/bonus_ANSWERS.csv')
+        for index, row in bonus_df.iterrows():
             # name = row["Vad heter du? (För- och efternamn)"].strip()
-            player_sheet_df.fillna("", inplace=True)
+            row.fillna("", inplace=True)
+            player_name = row["Vad heter du? (För- och efternamn)"].strip()
             if player_name in exclude_players:
                 continue
             player = self.get_player(player_name)
 
             if player is None:
-                warnings.warn(f"Could not find player {name}, so cannot add bonus guesses")
+                warnings.warn(f"Could not find player '{player_name}', so cannot add bonus guesses")
             else:
-                player.bonus_questions = self.get_bonus(player_sheet_df, start_event_index = event_index)
+                player.bonus_questions = self.get_bonus(row, start_event_index = event_index)
         
         # self.facit.bonus_questions = self.get_bonus(phase_facit_df.iloc[0], start_event_index = event_index, facit = True)
 
@@ -147,9 +151,9 @@ class Tournament(BaseModel):
         games = []
         event_index = start_event_index
         if phase == 'group_stage':
-            for i in range(4, 75, 2):
+            for i in range(4, 4 + 2 * N_GROUP_STAGE_GAMES, 2):
                 score = []
-                if teams_match := re.search(r' ([A-Za-zÅåÄäÖö]+) +- +([A-Za-zÅåÄäÖö]+)', row.index[i]):
+                if teams_match := re.search(fr'Hur slutar ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?', row.index[i]):
                     teams = teams_match.groups()
                 else:
                     raise ValueError(f"Could not find teams in {row.index[i]}")
@@ -163,15 +167,13 @@ class Tournament(BaseModel):
                     assert team == teams[j], f"Teams do not match: {team} != {teams[j]}"
                 
                 # Player guesses must have all scores, but facit can be empty
-                if "" in score:
+                if "" in score or any(pd.isna(s) for s in score):
                     if not facit:
                         raise ValueError(f"Empty guess for {teams}")
                     else:
-                        if not all([s == "" for s in score]):
+                        if not all([(s == "" or pd.isna(s)) for s in score]):
                             raise ValueError(f"Facit has only partial score for game: {teams}")
                         break
-
-                # print(type(score[0]))
 
                 games.append(Game(
                     teams = teams,
@@ -212,7 +214,7 @@ class Tournament(BaseModel):
                     if not facit:
                         raise ValueError(f"Empty guess for {teams}")
                     else:
-                        if not all([s == "" for s in score]):
+                        if not all([(s == "" or pd.isna(s)) for s in score]):
                             raise ValueError(f"Facit has only partial score for game: {teams}")
                         break
                 # print(type(score[0]))
@@ -275,19 +277,19 @@ class Tournament(BaseModel):
     def get_group_tables(self, row, start_event_index, facit = False):
         group_tables = []
         event_index = start_event_index
-        for i in range(76, 99, 4):
+        for i in range(4 + 2 * N_GROUP_STAGE_GAMES, len(row), 4):
             team_positions = []
             # print(row.index[i])
-            group = re.search(r'grupp ([ABCDEF])', row.index[i]).group(1)
+            group = re.search(r'grupp ([ABCDEFGHIJKL])', row.index[i]).group(1)
             for j in range(4):
-                team = re.search(r'\[([A-Za-zÅåÄäÖö]+)\]', row.index[i+j]).group(1)
+                team = re.search(fr'\[([{all_team_characters}]+)\]', row.index[i+j]).group(1)
                 team_positions.append((team, row.iloc[i+j]))
             
-            if "" in [pos for _, pos in team_positions]:
+            if "" in [pos for _, pos in team_positions] or any(pd.isna(pos) for _, pos in team_positions):
                 if not facit:
                     raise ValueError(f"Empty guess for group {group}")
                 else:
-                    if not all([pos == "" for _, pos in team_positions]):
+                    if not all([((pos == "") or pd.isna(pos)) for _, pos in team_positions]):
                         raise ValueError(f"Facit has only partial positions for group {group}")
                     break
 
@@ -302,17 +304,18 @@ class Tournament(BaseModel):
                 
         return group_tables
 
-    def get_bonus(self, player_df, start_event_index, facit = False):
+    def get_bonus(self, row, start_event_index, facit = False):
         bonus = []
         event_index = start_event_index
-        for index, row in player_df.iterrows():
-            points = row["Points"] 
-            if points == "":
-                points = None
-        
+        cols_and_vals = list(row.items())[2:]
+        for i in range(0, len(cols_and_vals), 2):
+            question, answer = cols_and_vals[i]
+            question = question.replace('"', "'")
+            assert cols_and_vals[i+1][0].startswith('Poäng'), f"Expected 'Poäng' column after question column, but got {cols_and_vals[i+1][0]}"
+            points = int(cols_and_vals[i+1][1]) if cols_and_vals[i+1][1] != "" else None
             bonus.append(Bonus(
-                question = row["Question"],
-                answer = row["Answer"],
+                question = question,
+                answer = answer,
                 points = points,
                 event_index = event_index,
                 facit = facit
@@ -370,8 +373,12 @@ class Tournament(BaseModel):
         for player in self.players:
             score = player.total_points
             nick = player.nick
-            knockout_question_answer = int(re.search(r"(\d+)", player.bonus_questions[-2].answer).group(1))
-            knockout_question_diff = abs(knockout_question_answer - TOTAL_GOALS_IN_TOURNAMENT)
+            knockout_question_answer = int(re.search(r"(\d+)", player.bonus_questions[-1].answer).group(1))
+            if TOTAL_GOALS_IN_TOURNAMENT is None:
+                knockout_question_diff = None
+            else:
+                knockout_question_diff = abs(knockout_question_answer - TOTAL_GOALS_IN_TOURNAMENT)
+
             player_tuples.append((score, knockout_question_diff, nick))
 
         players_tuples_sorted = sorted(player_tuples, key = lambda player_tuple: (-player_tuple[0], player_tuple[1],  player_tuple[2].lower()), reverse = False)
@@ -407,6 +414,25 @@ class Tournament(BaseModel):
             f.write(f"Namn, Poäng (Max {self.max_points})")
             for player_tuple in players_tuples_sorted:
                 f.write(f"\n{player_tuple[2]}, {player_tuple[0]}")
+
+    # def build_rst_stats_page(self, directory = "webpage/source", is_github_action:bool = False):
+        
+    #     stats_page_text = textwrap.dedent(
+    #     f"""        
+    #     Statistik
+    #     ==================================
+
+    #     Här kan du se lite statistik över tippningen.
+
+    #     .. *(For English, go to the bottom of the page.)*
+    #     """)
+
+    #     stats_page_text += rst_toctree(files=["content/stats/accuracy", "content/stats/most_common_guesses"],
+    #                                     directives={"hidden": "", "maxdepth": 1})
+
+    #     with open(f"{directory}/content/stats/index.rst", "w") as f:
+    #         f.write(stats_page_text)
+
 
 def parse_data(directory = "webpage/source", exclude_players: Optional[List[str]] = None, include_phases:Optional[List[Phase]] = None):
 

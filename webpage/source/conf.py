@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'TIPSET'
-copyright = '2024, hjaleta'
+copyright = '2026, hjaleta'
 author = 'hjaleta'
-release = '0.1'
+release = '0.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -24,7 +24,7 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'ansys_sphinx_theme'
+html_theme = 'breeze'
 html_static_path = ['_static']
 
 html_logo = "_static/TIPSET-logo-white.svg"

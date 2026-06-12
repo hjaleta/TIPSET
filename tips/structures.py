@@ -6,22 +6,40 @@ from tips.util import rst_toctree, rst_csv_table
 from tips.config import endtime_dict_inv
 
 # Define the groups
+# Change to world cup 2026 groups 
 groups = {
-    "A" : ("Tyskland", "Skottland", "Ungern", "Schweiz"),
-    "B" : ("Spanien", "Kroatien", "Italien", "Albanien"),
-    "C" : ("Slovenien", "Danmark", "Serbien", "England"),
-    "D" : ("Polen", "Nederländerna", "Österrike", "Frankrike"),
-    "E" : ("Belgien", "Slovakien", "Rumänien", "Ukraina"),
-    "F" : ("Turkiet", "Georgien", "Portugal", "Tjeckien"),
+    "A": ('Mexiko', 'Sydafrika', 'Sydkorea', 'Tjeckien'),
+    "B": ('Kanada', 'Bosnien & Hercegovina', 'Qatar', 'Schweiz'),
+    "C": ('Brasilien', 'Marocko', 'Haiti', 'Skottland'),
+    "D": ('USA', 'Paraguay', 'Australien', 'Turkiet'),
+    "E": ('Tyskland', 'Curaçao', 'Elfenbenskusten', 'Ecuador'),
+    "F": ('Nederländerna', 'Japan', 'Sverige', 'Tunisien'),
+    "G": ('Belgien', 'Egypten', 'Iran', 'Nya Zeeland'),
+    "H": ('Spanien', 'Kap Verde', 'Saudi Arabien', 'Uruguay'),
+    "I": ('Frankrike', 'Senegal', 'Irak', 'Norge'),
+    "J": ('Argentina', 'Algeriet', 'Österrike', 'Jordanien'),
+    "K": ('Portugal', 'Kongo DR', 'Uzbekistan', 'Colombia'),
+    "L": ('England', 'Kroatien', 'Ghana', 'Panama'),
 }
 all_teams = [team for teams in groups.values() for team in teams]
-Team = Literal["Tyskland", "Skottland", "Ungern", "Schweiz", 
-             "Spanien", "Kroatien", "Italien", "Albanien",
-             "Slovenien", "Danmark", "Serbien", "England", 
-             "Polen", "Nederländerna", "Österrike", "Frankrike", 
-             "Belgien", "Slovakien", "Rumänien", "Ukraina",
-             "Turkiet", "Georgien", "Portugal", "Tjeckien"]
-Group = Literal["A", "B", "C", "D", "E", "F"]
+all_team_characters = "".join(set("".join(all_teams)))
+all_team_characters = all_team_characters.replace('&', '\&')
+
+Team = Literal[
+    "Mexiko", "Sydafrika", "Sydkorea", "Tjeckien",
+    "Kanada", "Bosnien & Hercegovina", "Qatar", "Schweiz",
+    "Brasilien", "Marocko", "Haiti", "Skottland",
+    "USA", "Paraguay", "Australien", "Turkiet",
+    "Tyskland", "Curaçao", "Elfenbenskusten", "Ecuador",
+    "Nederländerna", "Japan", "Sverige", "Tunisien",
+    "Belgien", "Egypten", "Iran", "Nya Zeeland",
+    "Spanien", "Kap Verde", "Saudi Arabien", "Uruguay",
+    "Frankrike", "Senegal", "Irak", "Norge",
+    "Argentina", "Algeriet", "Österrike", "Jordanien",
+    "Portugal", "Kongo DR", "Uzbekistan", "Colombia",
+    "England", "Kroatien", "Ghana", "Panama"
+]
+Group = Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 Phase = Literal['group_stage', 'last_16', 'quarter_finals', 'semi_finals', 'final']
 Endtime = Literal['90', '120', 'penalties']
 
@@ -154,7 +172,7 @@ class FinalGame(Game):
 
 class GroupTable(BaseModel):
     teams_in_order : Tuple[Team, Team, Team, Team]
-    group: Optional[Literal['A', 'B', 'C', 'D', 'E', 'F']] = None
+    group: Optional[Group] = None
     points: Optional[int] = None
     event_index: int
 
@@ -196,7 +214,7 @@ class Player(BaseModel):
     games : Dict[Phase, List[Game]] = Field(default = {})
     group_tables : List[GroupTable] = []
     bonus_questions : List[Bonus] = []
-    point_list: List = []
+    event_index_and_point_list: List = []
     total_points: Optional[int] = None
     is_facit : bool = False
 
@@ -204,27 +222,23 @@ class Player(BaseModel):
 
         assert facit_player.is_facit
 
-        point_and_event_index = []
-
         for phase, games in self.games.items():
             if phase in include_phases:
                 for game, facit_game in zip(games, facit_player.games[phase]):
                     game.set_points(facit_game)
-                    point_and_event_index.append((game.event_index, game.points))
+                    self.event_index_and_point_list.append((game.event_index, game.points))
         
         if "group_stage" in include_phases:
             for table, facit_table in zip(self.group_tables, facit_player.group_tables):
                 table.set_points(facit_table)
-                self.point_list.append((table.event_index, table.points))
-                point_and_event_index.append((table.event_index, table.points))
-        
+                self.event_index_and_point_list.append((table.event_index, table.points))
+                
         if "bonus" in include_phases:
             for bonus in self.bonus_questions:
                 points = bonus.points if isinstance(bonus.points, int) else 0
-                self.point_list.append((bonus.event_index, points))
-                point_and_event_index.append((bonus.event_index, points))
-
-        self.total_points = sum([point for _, point in point_and_event_index])
+                self.event_index_and_point_list.append((bonus.event_index, points))
+                
+        self.total_points = sum([point for _, point in self.event_index_and_point_list])
 
     def build_guess_rst(self, directory: str = "webpage/source/content/players", include = None):
 
@@ -240,7 +254,7 @@ class Player(BaseModel):
 
         if self.bonus_questions and 'bonus' in include:
             with open(os.path.join(player_dir, 'bonus_table.csv'), 'w') as f:
-                f.write("Fråga,Svar,Poäng\n")
+                f.write('"Fråga","Svar","Poäng"\n')
                 for bonus in self.bonus_questions:
                     if bonus.points is None:
                         points = "?"
@@ -332,25 +346,25 @@ class Player(BaseModel):
             
             if phase == 'group_stage':
                 with open(table_file_path, 'w') as f:
-                    f.write("Match,Tippat resultat,Tjänade poäng\n")
+                    f.write('"Match","Tippat resultat","Tjänade poäng"\n')
                     for game in games:
                         points = '?' if game.points is None else game.points
-                        f.write(f"{game.teams[0]} - {game.teams[1]},{game.score[0]} - {game.score[1]},{points}\n")
+                        f.write(f'"{game.teams[0]} - {game.teams[1]}","{game.score[0]} - {game.score[1]}","{points}"\n')
 
             elif phase in ('last_16', 'quarter_finals', 'semi_finals'):
                 with open(table_file_path, 'w') as f:
-                    f.write("Match,Tippat resultat,Tippad sluttid,Vinnare,Tjänade poäng\n")
+                    f.write('"Match","Tippat resultat","Tippad sluttid","Vinnare","Tjänade poäng"\n')
                     for game in games:
                         points = '?' if game.points is None else game.points
                         endtime = "Straffar" if game.endtime == 'penalties' else f"{game.endtime} min"
-                        f.write(f"{game.teams[0]} - {game.teams[1]},{game.score[0]} - {game.score[1]},{endtime},{game.winner},{points}\n")
+                        f.write(f'"{game.teams[0]} - {game.teams[1]}","{game.score[0]} - {game.score[1]}","{endtime}","{game.winner}","{points}"\n')
 
             elif phase == "final":
                 # f = self.games[phase][0]
                 with open(table_file_path, 'w') as f:
-                    f.write("Fråga,Svar,Tjänade Poäng\n")
+                    f.write('"Fråga","Svar","Tjänade Poäng"\n')
                     for question, (answer, points) in self.games["final"][0].q_a_p_dict.items():
-                        f.write(f"{question},{answer},{points}\n")
+                        f.write(f'"{question}","{answer}","{points}"\n')
 
 
         player_index_rst_string = textwrap.dedent(

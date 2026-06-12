@@ -35,3 +35,4 @@ tournament = parse_data(exclude_players=EXCLUDE_PLAYERS, include_phases = INCLUD
 
 tournament.build_player_guesses_rst(include=INCLUDE_PHASES)
 tournament.build_rst_home_page_and_leaderboard(is_github_action = IS_GITHUB_ACTION)
+# tournament.build_rst_stats_page(is_github_action = IS_GITHUB_ACTION)
