@@ -391,7 +391,7 @@ class Tournament(BaseModel):
 
         home_page_text = textwrap.dedent(
         f"""        
-        Välkomna till EM-Tipset 2024!
+        Välkomna till VM-Tipset 2026!
         ==================================
 
         .. *(For English, go to the bottom of the page.)*
