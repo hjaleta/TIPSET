@@ -40,7 +40,7 @@ Team = Literal[
     "England", "Kroatien", "Ghana", "Panama"
 ]
 Group = Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
-Phase = Literal['group_stage', 'last_16', 'quarter_finals', 'semi_finals', 'final']
+Phase = Literal['group_stage', 'last_32', 'last_16', 'quarter_finals', 'semi_finals', 'final']
 Endtime = Literal['90', '120', 'penalties']
 
 class Game(BaseModel):
@@ -52,7 +52,8 @@ class Game(BaseModel):
     endtime : Endtime = '90'
     winner : Literal[Team, 'draw', None] = None
     points : Optional[int] = None
-    facit : bool = False
+    is_facit : bool = False
+    is_played : bool = True
 
     @model_validator(mode='after')
     def get_group(self):
@@ -76,7 +77,11 @@ class Game(BaseModel):
     @model_validator(mode='after')
     def get_winner(self):
         
-        if self.phase == 'group_stage':
+        if self.score[0] == self.score[1] == -1:
+            self.winner = None
+            assert not self.is_played, "If score is (-1, -1), is_played must be False"
+
+        elif self.phase == 'group_stage':
             
             if self.winner is not None:
                 raise ValueError("Input for 'winner' must be None for group stage games")
@@ -174,6 +179,9 @@ class GroupTable(BaseModel):
     teams_in_order : Tuple[Team, Team, Team, Team]
     group: Optional[Group] = None
     points: Optional[int] = None
+    is_facit : bool = False
+    is_finished : bool = True
+    is_valid : bool = True
     event_index: int
 
     @model_validator(mode='after')
@@ -193,15 +201,18 @@ class GroupTable(BaseModel):
         return self
 
     def set_points(self, facit_table: 'GroupTable'):
-        correct_places = sum([int(team == facit_team) for team, facit_team in zip(self.teams_in_order, facit_table.teams_in_order)])
-        self.points = min(correct_places, 3)
+        if self.is_valid:
+            correct_places = sum([int(team == facit_team) for team, facit_team in zip(self.teams_in_order, facit_table.teams_in_order)])
+            self.points = min(correct_places, 3)
+        else:
+            self.points = 0
 
 class Bonus(BaseModel):
     question: str
     answer: Optional[str] = None
     event_index: int
     points : Optional[int] | Literal["-"]
-    facit : bool = False
+    is_facit : bool = False
     
 
 class Player(BaseModel):
@@ -225,13 +236,15 @@ class Player(BaseModel):
         for phase, games in self.games.items():
             if phase in include_phases:
                 for game, facit_game in zip(games, facit_player.games[phase]):
-                    game.set_points(facit_game)
-                    self.event_index_and_point_list.append((game.event_index, game.points))
+                    if facit_game.is_played:
+                        game.set_points(facit_game)
+                        self.event_index_and_point_list.append((game.event_index, game.points))
         
         if "group_stage" in include_phases:
             for table, facit_table in zip(self.group_tables, facit_player.group_tables):
-                table.set_points(facit_table)
-                self.event_index_and_point_list.append((table.event_index, table.points))
+                if facit_table.is_finished:
+                    table.set_points(facit_table)
+                    self.event_index_and_point_list.append((table.event_index, table.points))
                 
         if "bonus" in include_phases:
             for bonus in self.bonus_questions:
@@ -245,7 +258,7 @@ class Player(BaseModel):
         if include is None:
             include = []
         else:
-            assert isinstance(include, list) and all([inc in ( 'bonus', 'group_stage', 'last_16', 'quarter_finals', 'semi_finals', 'final') for inc in include])
+            assert isinstance(include, list) and all([inc in ( 'bonus', 'group_stage', 'last_32', 'last_16', 'quarter_finals', 'semi_finals', 'final') for inc in include])
 
         player_dir = os.path.join(directory, self.nick)
         os.makedirs(player_dir, exist_ok=True)
@@ -289,8 +302,11 @@ class Player(BaseModel):
                 with open(group_table_file_path, 'w') as f:
                     f.write("Placering,Lag\n")
                     for i, team in enumerate(group_table.teams_in_order, start=1):
-                        f.write(f"{i},{team}\n")
-                
+                        if group_table.is_valid:
+                            f.write(f"{i},{team}\n")
+                        else:
+                            f.write(f"{i},-\n")
+                    
                 points = '?' if group_table.points is None else group_table.points
                 
                 group_table_rst_string += rst_csv_table(
@@ -314,6 +330,7 @@ class Player(BaseModel):
 
         rst_metadata = {
             'group_stage': ('Gruppspel - Matcher', (70, 20, 10)),
+            'last_32': ('Sextondelsfinaler', (60, 10, 10, 10, 10)),
             'last_16': ('Åttondelsfinaler', (60, 10, 10, 10, 10)),
             'quarter_finals': ('Kvartsfinaler', (60, 10, 10, 10, 10)),
             'semi_finals': ('Semifinaler', (60, 10, 10, 10, 10)),
@@ -351,7 +368,7 @@ class Player(BaseModel):
                         points = '?' if game.points is None else game.points
                         f.write(f'"{game.teams[0]} - {game.teams[1]}","{game.score[0]} - {game.score[1]}","{points}"\n')
 
-            elif phase in ('last_16', 'quarter_finals', 'semi_finals'):
+            elif phase in ('last_32', 'last_16', 'quarter_finals', 'semi_finals'):
                 with open(table_file_path, 'w') as f:
                     f.write('"Match","Tippat resultat","Tippad sluttid","Vinnare","Tjänade poäng"\n')
                     for game in games:

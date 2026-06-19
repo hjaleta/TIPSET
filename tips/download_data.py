@@ -10,6 +10,8 @@ def get_link_dict():
         "bonus_ANSWERS": "https://docs.google.com/spreadsheets/d/1WjUqj1Aw-dVt3Q0zXu2fBu-SBzih-D0fu3MdRb7-aWY/export?format=csv",
         "group_stage_ANSWERS": "https://docs.google.com/spreadsheets/d/1UydotLnGOnBp3_lr7ZwBuErq6zA5ULuC5ayGXf0iwfA/export?format=csv",
         "group_stage_RESULTS": "https://docs.google.com/spreadsheets/d/1cD-n8ZPWb3OxuOOi14MCRsq47WGtTYS2_w46BASwoMA/export?format=csv",
+        #"last_32_ANSWERS": "...",
+        #"last_32_RESULTS": "...",
         # "last_16_ANSWERS": "https://docs.google.com/spreadsheets/d/1DfnkRl8koShZ1XwlQz9Amo0C0KvGbMklsX1nrhojSMg/export?format=csv",
         # "last_16_RESULTS": "https://docs.google.com/spreadsheets/d/1M4XKFPGWqaZ4wCwBh7xpRZHk61X8mx6eOdzwE0hsdA0/export?format=csv",
         # "quarter_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/1um9zy9j1_x4Zmzd2630L3DBwcLggpn5I1iMrhVMLnWc/export?format=csv",

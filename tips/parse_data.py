@@ -71,14 +71,12 @@ class Tournament(BaseModel):
 
     def add_guesses(self, exclude_players = Optional[List[str]]):
         
-        
-
         if exclude_players is None:
             exclude_players = []
 
         event_index = 0
 
-        for phase in ['group_stage', 'last_16', 'quarter_finals', 'semi_finals', 'final']:
+        for phase in ['group_stage','last_32', 'last_16', 'quarter_finals', 'semi_finals', 'final']:
             
             try:
                 phase_df = pd.read_csv(f'{DATA_DIR}/{phase}_ANSWERS.csv')
@@ -112,7 +110,7 @@ class Tournament(BaseModel):
 
             phase_facit_df = pd.read_csv(f'{DATA_DIR}/{phase}_RESULTS.csv')
 
-            self.facit.games[phase] = self.get_games(phase_facit_df.iloc[0], phase = phase, start_event_index = event_index, facit = True)
+            self.facit.games[phase] = self.get_games(phase_facit_df.iloc[0], phase = phase, start_event_index = event_index, is_facit = True)
             
             event_index = self.players[0].highest_event_index + 1
 
@@ -125,7 +123,7 @@ class Tournament(BaseModel):
                     player.group_tables = self.get_group_tables(row, start_event_index = event_index)
 
 
-                self.facit.group_tables = self.get_group_tables(phase_facit_df.iloc[0], start_event_index = event_index, facit = True)
+                self.facit.group_tables = self.get_group_tables(phase_facit_df.iloc[0], start_event_index = event_index, is_facit = True)
 
                 event_index = self.players[0].highest_event_index + 1
 
@@ -142,12 +140,11 @@ class Tournament(BaseModel):
             if player is None:
                 warnings.warn(f"Could not find player '{player_name}', so cannot add bonus guesses")
             else:
-                player.bonus_questions = self.get_bonus(row, start_event_index = event_index)
+                player.bonus_questions = self.get_bonus(row, start_event_index = event_index, is_facit = False)
         
-        # self.facit.bonus_questions = self.get_bonus(phase_facit_df.iloc[0], start_event_index = event_index, facit = True)
 
-
-    def get_games(self, row, phase, start_event_index, facit = False):
+        
+    def get_games(self, row, phase, start_event_index, is_facit = False):
         games = []
         event_index = start_event_index
         if phase == 'group_stage':
@@ -165,35 +162,43 @@ class Tournament(BaseModel):
                     else:
                         raise ValueError(f"Could not find team in {row.index[i+j]}")
                     assert team == teams[j], f"Teams do not match: {team} != {teams[j]}"
-                
+                is_played = True
                 # Player guesses must have all scores, but facit can be empty
                 if "" in score or any(pd.isna(s) for s in score):
-                    if not facit:
+                    if not is_facit:
                         raise ValueError(f"Empty guess for {teams}")
                     else:
                         if not all([(s == "" or pd.isna(s)) for s in score]):
                             raise ValueError(f"Facit has only partial score for game: {teams}")
-                        break
+                        is_played = False
+                        score = [-1, -1]
+
+
 
                 games.append(Game(
                     teams = teams,
                     score = score,
                     event_index = i,
                     phase = phase,
-                    facit = facit
+                    is_facit = is_facit,
+                    is_played = is_played
                 ))
                 event_index += 1
                 
-        elif phase in ("last_16", "quarter_finals", "semi_finals"):
-            if phase == "last_16":
+        elif phase in ("last_32", "last_16", "quarter_finals", "semi_finals"):
+            
+            
+            if phase == "last_32":
+                n_games = 16
+            elif phase == "last_16":
                 n_games = 8
-            if phase == "quarter_finals":
+            elif phase == "quarter_finals":
                 n_games = 4
-            if phase == "semi_finals":
+            elif phase == "semi_finals":
                 n_games = 2     
             for i in range(2, 4*n_games, 4):
                 score = []
-                if teams_match := re.search(r' ([A-Za-zÅåÄäÖö]+) *- *([A-Za-zÅåÄäÖö]+)', row.index[i]):
+                if teams_match := re.search(fr'Hur slutar ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?', row.index[i]):
                     teams = teams_match.groups()
                 else:
                     raise ValueError(f"Could not find teams in {row.index[i]}")
@@ -209,14 +214,16 @@ class Tournament(BaseModel):
                 winner = row.iloc[i]
                 endtime_form = row.iloc[i+1]
                 
+                is_played = True
                 # Player guesses must have all scores, but facit can be empty
                 if "" in score or "" in (endtime_form, winner):
-                    if not facit:
+                    if not is_facit:
                         raise ValueError(f"Empty guess for {teams}")
                     else:
                         if not all([(s == "" or pd.isna(s)) for s in score]):
                             raise ValueError(f"Facit has only partial score for game: {teams}")
-                        break
+                        is_played = False
+
                 # print(type(score[0]))
                 endtime = endtime_dict[endtime_form]
                 try:
@@ -225,9 +232,10 @@ class Tournament(BaseModel):
                     score = score,
                     event_index = event_index,
                     phase = phase,
-                    facit = facit,
+                    is_facit = is_facit,
                     winner = winner,
-                    endtime = endtime
+                    endtime = endtime,
+                    is_played = is_played
 
                 ))
                 except Exception as e:
@@ -256,7 +264,7 @@ class Tournament(BaseModel):
                 score = score,
                 event_index = start_event_index,
                 phase = phase,
-                facit = facit,
+                is_facit = is_facit,
                 winner = winner,
                 endtime = endtime,
                 corner_range = corner_range,
@@ -274,7 +282,7 @@ class Tournament(BaseModel):
         return games
     
 
-    def get_group_tables(self, row, start_event_index, facit = False):
+    def get_group_tables(self, row, start_event_index, is_facit = False):
         group_tables = []
         event_index = start_event_index
         for i in range(4 + 2 * N_GROUP_STAGE_GAMES, len(row), 4):
@@ -285,26 +293,33 @@ class Tournament(BaseModel):
                 team = re.search(fr'\[([{all_team_characters}]+)\]', row.index[i+j]).group(1)
                 team_positions.append((team, row.iloc[i+j]))
             
+            is_finished, is_valid = True, True
             if "" in [pos for _, pos in team_positions] or any(pd.isna(pos) for _, pos in team_positions):
-                if not facit:
+                if not is_facit:
                     raise ValueError(f"Empty guess for group {group}")
                 else:
                     if not all([((pos == "") or pd.isna(pos)) for _, pos in team_positions]):
                         raise ValueError(f"Facit has only partial positions for group {group}")
-                    break
+                    is_finished = False
+                    
+            else:
+                if not set([pos for _, pos in team_positions]) == set([1,2,3,4]):
+                    is_valid = False
 
             teams_in_order = [team for team, _ in sorted(team_positions, key = lambda x: x[1])]
             group_tables.append(GroupTable(
                 teams_in_order = teams_in_order,
                 group = group,
                 event_index = event_index,
-                facit = facit
+                is_facit = is_facit,
+                is_finished = is_finished,
+                is_valid = False
             ))
             event_index += 1
                 
         return group_tables
 
-    def get_bonus(self, row, start_event_index, facit = False):
+    def get_bonus(self, row, start_event_index, is_facit = False):
         bonus = []
         event_index = start_event_index
         cols_and_vals = list(row.items())[2:]
@@ -318,7 +333,7 @@ class Tournament(BaseModel):
                 answer = answer,
                 points = points,
                 event_index = event_index,
-                facit = facit
+                is_facit = is_facit
             ))
             event_index += 1
         
@@ -336,7 +351,7 @@ class Tournament(BaseModel):
         if include is None:
             include = []
         
-        all_phases = ["group_stage", "last_16", "quarter_finals", "semi_finals", "final", "bonus"]
+        all_phases = ["group_stage", "last_32", "last_16", "quarter_finals", "semi_finals", "final", "bonus"]
 
         if not all([phase in all_phases for phase in include]):
             invalid_phases = set(include) - set(all_phases)
