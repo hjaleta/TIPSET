@@ -313,7 +313,7 @@ class Tournament(BaseModel):
                 event_index = event_index,
                 is_facit = is_facit,
                 is_finished = is_finished,
-                is_valid = False
+                is_valid = is_valid
             ))
             event_index += 1
                 
