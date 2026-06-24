@@ -6,6 +6,7 @@ import textwrap
 import os
 from tips.config import (spelling_dict, endtime_dict, 
                          DATA_DIR,
+                         GAMES_PER_PHASE,
                           TOTAL_GOALS_IN_TOURNAMENT
                          )
 from tips.util import rst_toctree, rst_csv_table
@@ -13,7 +14,6 @@ from typing import Optional, List
 from datetime import datetime, timedelta
 import warnings
 
-N_GROUP_STAGE_GAMES = 6 * len(groups) # 6 games per group
 
 class Tournament(BaseModel):
     players: List[Player] = []
@@ -148,7 +148,7 @@ class Tournament(BaseModel):
         games = []
         event_index = start_event_index
         if phase == 'group_stage':
-            for i in range(4, 4 + 2 * N_GROUP_STAGE_GAMES, 2):
+            for i in range(4, 4 + 2 * GAMES_PER_PHASE["group_stage"], 2):
                 score = []
                 if teams_match := re.search(fr'Hur slutar ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?', row.index[i]):
                     teams = teams_match.groups()
@@ -187,18 +187,10 @@ class Tournament(BaseModel):
                 
         elif phase in ("last_32", "last_16", "quarter_finals", "semi_finals"):
             
-            
-            if phase == "last_32":
-                n_games = 16
-            elif phase == "last_16":
-                n_games = 8
-            elif phase == "quarter_finals":
-                n_games = 4
-            elif phase == "semi_finals":
-                n_games = 2     
+            n_games = GAMES_PER_PHASE[phase]
             for i in range(2, 4*n_games, 4):
                 score = []
-                if teams_match := re.search(fr'Hur slutar ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?', row.index[i]):
+                if teams_match := re.search(fr'Vilka vinner mellan ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?', row.index[i]):
                     teams = teams_match.groups()
                 else:
                     raise ValueError(f"Could not find teams in {row.index[i]}")
@@ -216,16 +208,22 @@ class Tournament(BaseModel):
                 
                 is_played = True
                 # Player guesses must have all scores, but facit can be empty
-                if "" in score or "" in (endtime_form, winner):
+                if ("" in score or "" in (endtime_form, winner)) or any(pd.isna(s) for s in score) or any(pd.isna(s) for s in (endtime_form, winner)):
                     if not is_facit:
                         raise ValueError(f"Empty guess for {teams}")
                     else:
                         if not all([(s == "" or pd.isna(s)) for s in score]):
                             raise ValueError(f"Facit has only partial score for game: {teams}")
                         is_played = False
+                        score = [-1, -1]
+                        winner = None
 
                 # print(type(score[0]))
-                endtime = endtime_dict[endtime_form]
+                if (pd.isna(endtime_form) or endtime_form == ""):
+                    endtime = "invalid"
+                else:
+                    endtime = endtime_dict[endtime_form]
+                
                 try:
                     games.append(Game(
                     teams = teams,
@@ -285,7 +283,7 @@ class Tournament(BaseModel):
     def get_group_tables(self, row, start_event_index, is_facit = False):
         group_tables = []
         event_index = start_event_index
-        for i in range(4 + 2 * N_GROUP_STAGE_GAMES, len(row), 4):
+        for i in range(4 + 2 * GAMES_PER_PHASE["group_stage"], len(row), 4):
             team_positions = []
             # print(row.index[i])
             group = re.search(r'grupp ([ABCDEFGHIJKL])', row.index[i]).group(1)
@@ -388,10 +386,16 @@ class Tournament(BaseModel):
         for player in self.players:
             score = player.total_points
             nick = player.nick
-            knockout_question_answer = int(re.search(r"(\d+)", player.bonus_questions[-1].answer).group(1))
             if TOTAL_GOALS_IN_TOURNAMENT is None:
                 knockout_question_diff = None
             else:
+                if player.bonus_questions:
+                    try:
+                        knockout_question_answer = int(re.search(r"(\d+)", player.bonus_questions[-1].answer).group(1))
+                    except Exception as e:
+                        knockout_question_answer = 0
+                else:
+                    knockout_question_answer = 0
                 knockout_question_diff = abs(knockout_question_answer - TOTAL_GOALS_IN_TOURNAMENT)
 
             player_tuples.append((score, knockout_question_diff, nick))

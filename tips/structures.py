@@ -41,7 +41,7 @@ Team = Literal[
 ]
 Group = Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 Phase = Literal['group_stage', 'last_32', 'last_16', 'quarter_finals', 'semi_finals', 'final']
-Endtime = Literal['90', '120', 'penalties']
+Endtime = Literal['90', '120', 'penalties', 'invalid']
 
 class Game(BaseModel):
     teams: Tuple[Team, Team]
