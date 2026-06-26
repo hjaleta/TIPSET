@@ -36,6 +36,7 @@ spelling_dict = {
     'Inga Tumimnaite': 'Inga Tuminaite',
     'Isac Ekblom  (EM2026)': 'Isac Ekblom',
     'Lucas Fernandez (Lucho)': 'Lucas Fernandez',
+    'Lucas fernandez (lucho)': 'Lucas Fernandez',
     'Maxime clauzier': 'Maxime Clauzier',
     'Viggo': 'Viggo Nathorst-Böös',
     'Martin Pehrsson ( Killer Joe )': 'Martin Pehrsson',
