@@ -7,7 +7,7 @@ Här finns det länkar till de olika svarsformulären.
 
 `Gruppspel <https://forms.gle/NazSpo5E9azdxsmR8>`_
 
-Sextondelsfinal *(tillgänglig efter gruppspelet)*
+`Sextondelsfinal1 <https://forms.gle/USRENMcyEYWWdeTH8>`_
 
 Åttondelsfinal *(tillgänglig efter sextondelsfinalerna)*
 
