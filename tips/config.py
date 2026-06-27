@@ -39,6 +39,9 @@ spelling_dict = {
     'Lucas fernandez (lucho)': 'Lucas Fernandez',
     'Maxime clauzier': 'Maxime Clauzier',
     'Viggo': 'Viggo Nathorst-Böös',
+    'ChefTony': 'Antoine',
+    'Maz': 'Madeleine Möller',
+    'Wayne Rooney': 'Kenji Capannelli',
     'Martin Pehrsson ( Killer Joe )': 'Martin Pehrsson',
 }
 
