@@ -42,6 +42,7 @@ spelling_dict = {
     'ChefTony': 'Antoine',
     'Maz': 'Madeleine Möller',
     'Wayne Rooney': 'Kenji Capannelli',
+    'Anaastasis': 'Anastasis Dimitriadis',
     'Martin Pehrsson ( Killer Joe )': 'Martin Pehrsson',
 }
 
