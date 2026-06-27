@@ -1,0 +1,19 @@
+
+Välkomna till VM-Tipset 2026!
+==================================
+
+.. *(For English, go to the bottom of the page.)*
+
+.. csv-table:: Poängställning (Uppdaterad 28 June 01:43)
+    :file: content/leaderboard.csv
+    :header-rows: 1
+    :widths: 70, 30
+
+
+.. toctree::
+    :hidden: 
+    :maxdepth: 1
+
+    content/rules
+    content/forms
+    content/players/index

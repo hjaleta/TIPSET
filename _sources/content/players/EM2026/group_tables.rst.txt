@@ -1,0 +1,63 @@
+
+Gruppspel - Tabeller
+--------------------
+
+.. csv-table:: Grupp A  -  Tjänade poäng: 1
+    :file: table_A.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp B  -  Tjänade poäng: 3
+    :file: table_B.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp C  -  Tjänade poäng: 3
+    :file: table_C.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp D  -  Tjänade poäng: 1
+    :file: table_D.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp E  -  Tjänade poäng: 3
+    :file: table_E.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp F  -  Tjänade poäng: 2
+    :file: table_F.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp G  -  Tjänade poäng: 3
+    :file: table_G.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp H  -  Tjänade poäng: 1
+    :file: table_H.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp I  -  Tjänade poäng: 2
+    :file: table_I.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp J  -  Tjänade poäng: ?
+    :file: table_J.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp K  -  Tjänade poäng: ?
+    :file: table_K.csv
+    :header-rows: 1
+    :widths: 10, 90
+
+.. csv-table:: Grupp L  -  Tjänade poäng: 3
+    :file: table_L.csv
+    :header-rows: 1
+    :widths: 10, 90
