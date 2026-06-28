@@ -45,6 +45,7 @@ spelling_dict = {
     'Anaastasis': 'Anastasis Dimitriadis',
     'Isac ekblom': 'Isac Ekblom',
     'Varm tårta': 'Maelys Lomenech',
+    'Sara': 'Sara Whittaker',
     'Martin Pehrsson ( Killer Joe )': 'Martin Pehrsson',
 }
 
