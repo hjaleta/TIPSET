@@ -9,6 +9,8 @@ Här finns det länkar till de olika svarsformulären.
 
 `Sextondelsfinal1 <https://forms.gle/USRENMcyEYWWdeTH8>`_
 
+`Sextondelsfinal2 <https://forms.gle/djKCZUNThv63RzCk6>`_
+
 Åttondelsfinal *(tillgänglig efter sextondelsfinalerna)*
 
 Kvartsfinal *(tillgänglig efter åttondelsfinalerna)*
