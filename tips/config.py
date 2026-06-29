@@ -37,6 +37,7 @@ spelling_dict = {
     'Isac Ekblom  (EM2026)': 'Isac Ekblom',
     'Lucas Fernandez (Lucho)': 'Lucas Fernandez',
     'Lucas fernandez (lucho)': 'Lucas Fernandez',
+    'Lucas fernandez': 'Lucas Fernandez',
     'Maxime clauzier': 'Maxime Clauzier',
     'Viggo': 'Viggo Nathorst-Böös',
     'ChefTony': 'Antoine',
