@@ -11,7 +11,7 @@ INCLUDE_PHASES = ["group_stage", 'bonus', "last_32",
 GAMES_PER_PHASE = {
     "group_stage": 72,
     "last_32": 16,
-    "last_16": 4,
+    "last_16": 3,
     # "quarter_finals": 4,
     # "semi_finals": 2,
     # "final": 1,
