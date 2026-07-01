@@ -1,0 +1,8 @@
+
+Sextondelsfinaler
+-----------------
+
+.. csv-table:: None
+    :file: last_32_table.csv
+    :header-rows: 1
+    :widths: 60,10,10,10,10
