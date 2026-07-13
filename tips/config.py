@@ -4,8 +4,8 @@ DOWNLOAD_DATA = os.getenv("DOWNLOAD_DATA", "false")
 EXCLUDE_PLAYERS = ["Test1",  "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Test 17"
                    ]
 
-INCLUDE_PHASES = ["group_stage", 'bonus', "last_32", "last_16", "quarter_finals", 
-                  #"semi_finals", "final", "bonus"
+INCLUDE_PHASES = ["group_stage", 'bonus', "last_32", "last_16", "quarter_finals", "semi_finals", 
+                  #"final", "bonus"
                   ]
 
 GAMES_PER_PHASE = {
@@ -13,7 +13,7 @@ GAMES_PER_PHASE = {
     "last_32": 16,
     "last_16": 8,
     "quarter_finals": 4,
-    # "semi_finals": 2,
+    "semi_finals": 2,
     # "final": 1,
 }
 
