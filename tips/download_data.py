@@ -16,8 +16,8 @@ def get_link_dict():
         "last_16_RESULTS": "https://docs.google.com/spreadsheets/d/1zQptnJhXePtWUuzmF-g7Y0Kk-Qv8bBKv2ZaLy9Kkhrc/export?format=csv",
         "quarter_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/11gNxWWfgNcOQ8xOJDCVqnXsfl2P_9CBN_VqdUKXjoMU/export?format=csv",
         "quarter_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1t6ij7w_EUj8CHdww4XIzjZz1xiljL_Ni7YSbpirZ-xI/export?format=csv",
-        # "semi_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/1iK3YSk8KpMhSx2wayyFty4dXwx1a4jHKtPoUOe-oMP8/export?format=csv",
-        # "semi_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1ha4CCQUEh6eMnRCOAReunnHjC4XPbGS-xVmZ77VgJKI/export?format=csv", 
+        "semi_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/18ycCDt3vb1uHnB960drX1-Z6M7qKICErHaTs2HlniWY/export?format=csv",
+        "semi_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1r8ho9b0Zwy0ohBBhpJ0UOsgH5wGD_S0khIx1_fp94f4/export?format=csv", 
         # "final_ANSWERS": "https://docs.google.com/spreadsheets/d/15UNX9Oi3_IC8UQthggdiQEpS_2pOaxAFrabzkmKQnKQ/export?format=csv",
         # "final_RESULTS": "https://docs.google.com/spreadsheets/d/1a-b1YPV_wBqNuyrcbDb9WguxjRrNOY47tew6TNQL24A/export?format=csv"
     }
