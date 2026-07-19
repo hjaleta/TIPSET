@@ -379,10 +379,11 @@ class Player(BaseModel):
                                         f.write(f'"{question.teams[0]} - {question.teams[1]}","{question.score[0]} - {question.score[1]}","{endtime}","{question.winner}","{points}"\n')
                                     else:
                                         f.write(f'"{question.teams[0]} - {question.teams[1]}","{question.score[0]} - {question.score[1]}","{points}"\n')
-                        
                             
                             elif isinstance(question, KnockoutQuestion):
-                                f.write(f'"{question.question.replace('"', "'")}","{question.answer}"\n')
+                                question_str = question.question.replace('"', "'")
+                                answer_str = str(question.answer)
+                                f.write(f'"{question_str}","{answer_str}"\n')
                             else:
                                 raise ValueError(f"Unknown question type: {type(question)}")
 
