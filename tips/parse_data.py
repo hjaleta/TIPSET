@@ -1,14 +1,11 @@
-from tips.structures import Game, GroupTable, Bonus, Player, FinalGame, Phase, all_team_characters, groups
+from tips.structures import (Game, GroupTable, Player, TextQuestion, MultiChoiceQuestion, KnockoutQuestion, 
+                             SingleChoiceQuestion, Phase, all_team_characters, groups, QUESTION_TYPE_DICT)
 from pydantic import BaseModel
 import pandas as pd
 import re
 import textwrap
 import os
-from tips.config import (spelling_dict, endtime_dict, 
-                         DATA_DIR,
-                         GAMES_PER_PHASE,
-                          TOTAL_GOALS_IN_TOURNAMENT
-                         )
+from tips import config 
 from tips.util import rst_toctree, rst_csv_table
 from typing import Optional, List
 from datetime import datetime, timedelta
@@ -24,7 +21,7 @@ class Tournament(BaseModel):
         
         print(f"EXCLUDING PLAYERS: {exclude_players}")
 
-        group_stage_df = pd.read_csv(f'{DATA_DIR}/group_stage_ANSWERS.csv')
+        group_stage_df = pd.read_csv(f'{config.DATA_DIR}/group_stage_ANSWERS.csv')
         # print(group_stage_df)
 
         if exclude_players is None:
@@ -46,7 +43,7 @@ class Tournament(BaseModel):
                 self.players.append(player)
         
         
-        facit_data_df = pd.read_csv(f'{DATA_DIR}/group_stage_RESULTS.csv')
+        facit_data_df = pd.read_csv(f'{config.DATA_DIR}/group_stage_RESULTS.csv')
         self.facit = Player(
             name = facit_data_df.iloc[0]["Vad heter du? (För- och efternamn)"],
             nick = facit_data_df.iloc[0]["Vad vill du ha för smeknamn i tipset?"],
@@ -63,35 +60,35 @@ class Tournament(BaseModel):
             if player.nick == name:
                 return player
         
-        if name in spelling_dict:
-            print(f"Found spelling mistake for {name}, using correct spelling {spelling_dict[name]} instead.")
-            return self.get_player(spelling_dict[name])
+        if name in config.spelling_dict:
+            print(f"Found spelling mistake for {name}, using correct spelling {config.spelling_dict[name]} instead.")
+            return self.get_player(config.spelling_dict[name])
 
         return None   
 
-    def add_guesses(self, exclude_players = Optional[List[str]]):
+    def add_guesses(self, exclude_players: Optional[List[str]] = None):
         
         if exclude_players is None:
             exclude_players = []
 
         event_index = 0
 
-        for phase in ['group_stage','last_32', 'last_16', 'quarter_finals', 'semi_finals', 'final']:
+        for phase, question_types in config.PHASE_STRUCTURE.items():
+            start_column = config.PHASE_STARTING_COLUMN[phase]
             
             try:
-                phase_df = pd.read_csv(f'{DATA_DIR}/{phase}_ANSWERS.csv')
-                # print(f"Adding guesses for phase {phase}")
+                phase_df = pd.read_csv(f'{config.DATA_DIR}/{phase}_ANSWERS.csv')
             except FileNotFoundError:
                 print(f"Could not find file for phase {phase}")
                 continue
             
             n_players = 0
             for index, row in phase_df.iterrows():
+                # Get the player from the name column in the row
                 try:
                     name = row["Vad heter du? (För- och efternamn)"].strip()
                 except KeyError:
                     name = row["Vad heter du? (Förnamn + efternamn)"].strip()
-                
                 if name in exclude_players:
                     continue
 
@@ -101,241 +98,243 @@ class Tournament(BaseModel):
                     warnings.warn(f"Could not find player {name}, so cannot add guesses for {phase}")
                 else:
                     try:
-                        player.games[phase] = self.get_games(row, phase = phase, start_event_index = event_index)
+                        player.questions[phase] = self.get_questions(row, question_types, start_column = start_column, 
+                                                                     start_event_index = event_index, phase = phase, is_facit = False)
                         n_players += 1
                     except Exception as e:
                         raise ValueError(f"problem for player {player.name}")
 
-            print(f"Processed {n_players} players for phase {phase}: {[player.name for player in self.players if phase in player.games]}")
 
-            phase_facit_df = pd.read_csv(f'{DATA_DIR}/{phase}_RESULTS.csv')
+            print(f"Processed {n_players} players for phase {phase}: {[player.name for player in self.players if phase in player.questions]}")
 
-            self.facit.games[phase] = self.get_games(phase_facit_df.iloc[0], phase = phase, start_event_index = event_index, is_facit = True)
+            try:
+                phase_facit_df = pd.read_csv(f'{config.DATA_DIR}/{phase}_RESULTS.csv')
+                self.facit.questions[phase] = self.get_questions(phase_facit_df.iloc[0], question_types, start_column = start_column, 
+                                                                start_event_index = event_index, phase = phase, is_facit = True)
+            except FileNotFoundError:
+                print(f"Could not find facit file for phase {phase}")
+                # if phase == "bonus":
+                #     print(f"No facit file for phase {phase}, but this is expected for bonus phase.")
+                #     self.facit.questions[phase] = [None] * len(question_types)
+                # else:
+                #     raise ValueError(f"Could not find facit file for phase {phase}")
+
             
             event_index = self.players[0].highest_event_index + 1
 
-            if phase == 'group_stage':
-                for index, row in phase_df.iterrows():
-                    name = row["Vad heter du? (För- och efternamn)"].strip()
-                    if name in exclude_players:
-                        continue
-                    player = self.get_player(name)
-                    player.group_tables = self.get_group_tables(row, start_event_index = event_index)
 
-
-                self.facit.group_tables = self.get_group_tables(phase_facit_df.iloc[0], start_event_index = event_index, is_facit = True)
-
-                event_index = self.players[0].highest_event_index + 1
-
-        # Add bonus
-        bonus_df = pd.read_csv(f'{DATA_DIR}/bonus_ANSWERS.csv')
-        for index, row in bonus_df.iterrows():
-            # name = row["Vad heter du? (För- och efternamn)"].strip()
-            row.fillna("", inplace=True)
-            player_name = row["Vad heter du? (För- och efternamn)"].strip()
-            if player_name in exclude_players:
-                continue
-            player = self.get_player(player_name)
-
-            if player is None:
-                warnings.warn(f"Could not find player '{player_name}', so cannot add bonus guesses")
-            else:
-                player.bonus_questions = self.get_bonus(row, start_event_index = event_index, is_facit = False)
-        
-
-        
-    def get_games(self, row, phase, start_event_index, is_facit = False):
-        games = []
+    def get_questions(self, row, question_types, start_column, start_event_index, phase, is_facit = False):
+        questions = []
         event_index = start_event_index
-        if phase == 'group_stage':
-            for i in range(4, 4 + 2 * GAMES_PER_PHASE["group_stage"], 2):
-                score = []
-                if teams_match := re.search(fr'Hur slutar ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?', row.index[i]):
-                    teams = teams_match.groups()
-                else:
-                    raise ValueError(f"Could not find teams in {row.index[i]}")
+        
+        # if phase == 'group_stage':
+        col_i = start_column
+        for question_type in question_types:
+            question_class, n_columns = QUESTION_TYPE_DICT[question_type]
+            if question_type in ( 'group_game', 'knockout_game'):
+                knockout_game = (question_type == 'knockout_game')
                 
-                for j in range(2):
-                    score.append(row.iloc[i+j])
-                    if team_match := re.search(r'\[(.*)\]', row.index[i+j]):
-                        team = team_match.group(1)
-                    else:
-                        raise ValueError(f"Could not find team in {row.index[i+j]}")
-                    assert team == teams[j], f"Teams do not match: {team} != {teams[j]}"
-                is_played = True
-                # Player guesses must have all scores, but facit can be empty
-                if "" in score or any(pd.isna(s) for s in score):
-                    if not is_facit:
-                        raise ValueError(f"Empty guess for {teams}")
-                    else:
-                        if not all([(s == "" or pd.isna(s)) for s in score]):
-                            raise ValueError(f"Facit has only partial score for game: {teams}")
-                        is_played = False
-                        score = [-1, -1]
-
-
-
-                games.append(Game(
-                    teams = teams,
-                    score = score,
-                    event_index = i,
-                    phase = phase,
-                    is_facit = is_facit,
-                    is_played = is_played
-                ))
-                event_index += 1
+                question = self.get_game(row = row, first_column = col_i, knockout_game = knockout_game,
+                                                         event_index = event_index, is_facit = is_facit,
+                                                         skip_teams_check = (phase == 'final')
+                                                         )
                 
-        elif phase in ("last_32", "last_16", "quarter_finals", "semi_finals"):
             
-            n_games = GAMES_PER_PHASE[phase]
-            for i in range(2, 4*n_games, 4):
-                score = []
-                if teams_match := re.search(fr'Vilka vinner mellan ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?', row.index[i]):
-                    teams = teams_match.groups()
-                else:
-                    raise ValueError(f"Could not find teams in {row.index[i]}")
+            elif question_type == 'group_table':
                 
-                for j in range(2):
-                    score.append(row.iloc[i+j+2])
-                    if team_match := re.search(r'\[(.*)\]', row.index[i+j+2]):
-                        team = team_match.group(1)
-                    else:
-                        raise ValueError(f"Could not find team in {row.index[i+j+2]}")
-                    assert team == teams[j], f"Teams do not match: {team} != {teams[j]}"
+                question = self.get_group_table(row = row, first_column = col_i,
+                                                    event_index = event_index, is_facit = is_facit)
                 
-                winner = row.iloc[i]
-                endtime_form = row.iloc[i+1]
-                
-                is_played = True
-                # Player guesses must have all scores, but facit can be empty
-                if ("" in score or "" in (endtime_form, winner)) or any(pd.isna(s) for s in score) or any(pd.isna(s) for s in (endtime_form, winner)):
-                    if not is_facit:
-                        raise ValueError(f"Empty guess for {teams}")
-                    else:
-                        if not all([(s == "" or pd.isna(s)) for s in score]):
-                            raise ValueError(f"Facit has only partial score for game: {teams}")
-                        is_played = False
-                        score = [-1, -1]
-                        winner = None
 
-                # print(type(score[0]))
-                if (pd.isna(endtime_form) or endtime_form == ""):
-                    endtime = "invalid"
-                else:
-                    endtime = endtime_dict[endtime_form]
-                
-                try:
-                    games.append(Game(
-                    teams = teams,
-                    score = score,
+            elif question_type == 'text':
+                # print(row.iloc[col_i+1])
+                points = '-' if pd.isna(row.iloc[col_i+1]) else row.iloc[col_i+1]
+                question = TextQuestion(
+                    question = row.index[col_i],
+                    answer = row.iloc[col_i],
+                    points = points,
                     event_index = event_index,
-                    phase = phase,
+                    is_facit = is_facit
+                )
+                
+            
+            elif question_type == 'multi_choice':
+                if (match := re.search(r"Välj (\d+)", row.index[col_i])):
+                    n_choices_allowed = int(match.group(1))
+                else:
+                    raise ValueError(f"Could not find number of choices allowed in question: {row.index[col_i]}")
+                
+                is_complete = True
+                if row.iloc[col_i] == "" or pd.isna(row.iloc[col_i]):
+                    if not is_facit:
+                        raise ValueError(f"Empty guess for multi-choice question: {row.index[col_i]}")
+                    is_complete = False
+                    answer = []
+                else:
+                    answer = row.iloc[col_i].split(", ")
+                
+                #print(row.index[col_i], row.iloc[col_i])
+
+                question = MultiChoiceQuestion(
+                    question = row.index[col_i],
+                    answer = answer,
+                    number_of_choices_allowed = n_choices_allowed,
+                    event_index = event_index,
                     is_facit = is_facit,
-                    winner = winner,
-                    endtime = endtime,
-                    is_played = is_played
+                    is_complete = is_complete
+                )
+            
+            elif question_type == 'single_choice':
 
-                ))
-                except Exception as e:
-                    raise ValueError(f"bad data {teams},{score},{phase},{winner},{endtime},")
-                event_index += 1
+                is_complete = True
+                if row.iloc[col_i] == "" or pd.isna(row.iloc[col_i]):
+                    if not is_facit:
+                        raise ValueError(f"Empty guess for single-choice question: {row.index[col_i]}")
+                    is_complete = False
+                    answer = None
+                else:
+                    answer = row.iloc[col_i]
 
-        elif phase == "final":
-            winner = row.iloc[2]
-            endtime = row.iloc[3]
+                #print(f"Creating SingleChoiceQuestion for {row.index[col_i]} with answer {row.iloc[col_i]} and is_facit={is_facit} and is_complete={is_complete}")
 
-            team1 = re.search(r"\[([A-Za-zÅåÄäÖö]+)\]", row.index[4]).group(1)
-            team2 = re.search(r"\[([A-Za-zÅåÄäÖö]+)\]", row.index[5]).group(1)
+                question = SingleChoiceQuestion(
+                    question = row.index[col_i],
+                    answer = answer,
+                    event_index = event_index,
+                    is_facit = is_facit,
+                    is_complete = is_complete
+                )
 
-            score = tuple([int(row.iloc[i]) for i in (4,5)])
+            elif question_type == 'knockout_question':
+                is_complete = True
+                if row.iloc[col_i] == "" or pd.isna(row.iloc[col_i]):
+                    if not is_facit:
+                        raise ValueError(f"Empty guess for knockout question: {row.index[col_i]}")
+                    is_complete = False
+                    answer = -1
+                else:
+                    answer = int(re.search(r"(\d+)", row.iloc[col_i]).group(1))
 
-            corner_range = tuple( int(c) for c in row.iloc[6].split("-"))
-            fair_play_range1 = tuple( int(f) for f in row.iloc[7].split("-"))
-            fair_play_range2 = tuple( int(f) for f in row.iloc[8].split("-"))
+                question = KnockoutQuestion(
+                    question = row.index[col_i],
+                    answer = answer,
+                    event_index = event_index,
+                    is_facit = is_facit,
+                    is_complete = is_complete)
+            
+            # print(question)
 
-            scorers = row.iloc[9].split(", ")
+            questions.append(question)
+            
+            event_index += 1
+            col_i += n_columns
 
-            endtime = endtime_dict[endtime]
-            try:
-                games.append(FinalGame(
-                teams = (team1,team2),
+        return questions
+    
+    def get_game(self, row, first_column, knockout_game, event_index, is_facit, skip_teams_check = False):
+        
+        score, teams_from_options = [], [] 
+        offset = 2 if knockout_game else 0
+        for j in range(offset, offset + 2):
+            score.append(row.iloc[first_column+j])
+            if team_match := re.search(r'\[(.*)\]', row.index[first_column+j]):
+                teams_from_options.append(team_match.group(1))
+            else:
+                raise ValueError(f"Could not find team in {row.index[first_column+j]}")
+        
+        if not skip_teams_check:
+            regex_pattern_question = fr'Hur slutar ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?' if not knockout_game else fr'Vilka vinner mellan ([{all_team_characters}]+) +- +([{all_team_characters}]+)\?'
+            if teams_match := re.search(regex_pattern_question, row.index[first_column]):
+                teams_from_question = teams_match.groups()
+            else:
+                raise ValueError(f"Could not find teams in {row.index[first_column]}")
+            
+            assert all(t_o == t_q for t_o, t_q in zip(teams_from_options, teams_from_question)), f"Teams from options {teams_from_options} do not match teams from question {teams_from_question}"
+            # assert team == teams[j-offset], f"Teams do not match: {team} != {teams[j-offset]}"
+        
+        teams = teams_from_options
+
+
+        is_complete = True
+        # Player guesses must have all scores, but facit can be empty
+        if "" in score or any(pd.isna(s) for s in score):
+            if not is_facit:
+                raise ValueError(f"Empty guess for {teams_from_question}")
+            else:
+                if not all([(s == "" or pd.isna(s)) for s in score]):
+                    raise ValueError(f"Facit has only partial score for game: {teams_from_question}")
+                is_complete = False
+                score = [-1, -1]
+
+        if knockout_game:
+            winner = row.iloc[first_column]
+            endtime_form = row.iloc[first_column+1]
+            if "" in (endtime_form, winner) or any(pd.isna(s) for s in (endtime_form, winner)):
+                if not is_facit:
+                    raise ValueError(f"Empty guess for {teams}")
+                else:
+                    if not all([(s == "" or pd.isna(s)) for s in (endtime_form, winner)]):
+                        raise ValueError(f"Facit has only partial answers for game: {teams}")
+                    is_complete = False
+                    
+                    winner, endtime = None, 'invalid'
+            # if winner not in teams:
+            #     raise ValueError(f"Winner {winner} is not in teams {teams}")
+            else:
+                endtime = config.endtime_dict[endtime_form]
+        else:
+            winner = None
+            endtime = '90'
+
+        try:
+            game = Game(
+                teams = teams,
                 score = score,
-                event_index = start_event_index,
-                phase = phase,
+                event_index = event_index,
+                knockout_game = knockout_game,
                 is_facit = is_facit,
                 winner = winner,
                 endtime = endtime,
-                corner_range = corner_range,
-                fair_play_points = (fair_play_range1, fair_play_range2),
-                scorers = scorers
-            ))
-            except Exception as e:
-                raise
-                raise ValueError(f"bad data {teams},{score},{phase},{winner},{endtime},")
-            event_index += 1
+                is_complete = is_complete
+            )
+        except Exception as e:
+            raise ValueError(f"bad data {teams=},{score=},{knockout_game=},{winner=},{endtime=},{is_complete=}")
 
-        else:
-            raise ValueError(f"Unknown phase {phase}")
+        return game
 
-        return games
-    
 
-    def get_group_tables(self, row, start_event_index, is_facit = False):
-        group_tables = []
-        event_index = start_event_index
-        for i in range(4 + 2 * GAMES_PER_PHASE["group_stage"], len(row), 4):
-            team_positions = []
-            # print(row.index[i])
-            group = re.search(r'grupp ([ABCDEFGHIJKL])', row.index[i]).group(1)
-            for j in range(4):
-                team = re.search(fr'\[([{all_team_characters}]+)\]', row.index[i+j]).group(1)
-                team_positions.append((team, row.iloc[i+j]))
-            
-            is_finished, is_valid = True, True
-            if "" in [pos for _, pos in team_positions] or any(pd.isna(pos) for _, pos in team_positions):
-                if not is_facit:
-                    raise ValueError(f"Empty guess for group {group}")
-                else:
-                    if not all([((pos == "") or pd.isna(pos)) for _, pos in team_positions]):
-                        raise ValueError(f"Facit has only partial positions for group {group}")
-                    is_finished = False
-                    
-            else:
-                if not set([pos for _, pos in team_positions]) == set([1,2,3,4]):
-                    is_valid = False
-
-            teams_in_order = [team for team, _ in sorted(team_positions, key = lambda x: x[1])]
-            group_tables.append(GroupTable(
-                teams_in_order = teams_in_order,
-                group = group,
-                event_index = event_index,
-                is_facit = is_facit,
-                is_finished = is_finished,
-                is_valid = is_valid
-            ))
-            event_index += 1
-                
-        return group_tables
-
-    def get_bonus(self, row, start_event_index, is_facit = False):
-        bonus = []
-        event_index = start_event_index
-        cols_and_vals = list(row.items())[2:]
-        for i in range(0, len(cols_and_vals), 2):
-            question, answer = cols_and_vals[i]
-            question = question.replace('"', "'")
-            assert cols_and_vals[i+1][0].startswith('Poäng'), f"Expected 'Poäng' column after question column, but got {cols_and_vals[i+1][0]}"
-            points = int(cols_and_vals[i+1][1]) if cols_and_vals[i+1][1] != "" else None
-            bonus.append(Bonus(
-                question = question,
-                answer = answer,
-                points = points,
-                event_index = event_index,
-                is_facit = is_facit
-            ))
-            event_index += 1
+    def get_group_table(self, row, first_column, event_index, is_facit = False):
         
-        return bonus
+        team_positions = []
+        
+        group = re.search(r'grupp ([ABCDEFGHIJKL])', row.index[first_column]).group(1)
+        for j in range(4):
+            team = re.search(fr'\[([{all_team_characters}]+)\]', row.index[first_column+j]).group(1)
+            team_positions.append((team, row.iloc[first_column+j]))
+            
+        is_finished, is_valid = True, True
+        if "" in [pos for _, pos in team_positions] or any(pd.isna(pos) for _, pos in team_positions):
+            if not is_facit:
+                raise ValueError(f"Empty guess for group {group}")
+            else:
+                if not all([((pos == "") or pd.isna(pos)) for _, pos in team_positions]):
+                    raise ValueError(f"Facit has only partial positions for group {group}")
+                is_finished = False
+                    
+
+        if not set([pos for _, pos in team_positions]) == set([1,2,3,4]):
+            is_valid = False
+
+        teams_in_order = [team for team, _ in sorted(team_positions, key = lambda x: x[1])]
+        return GroupTable(
+            teams_in_order = teams_in_order,
+            group = group,
+            event_index = event_index,
+            is_facit = is_facit,
+            is_finished = is_finished,
+            is_valid = is_valid
+        )
+        
     
     def compute_points(self, include_phases):
         for player in self.players:
@@ -386,7 +385,7 @@ class Tournament(BaseModel):
         for player in self.players:
             score = player.total_points
             nick = player.nick
-            if TOTAL_GOALS_IN_TOURNAMENT is None:
+            if config.TOTAL_GOALS_IN_TOURNAMENT is None:
                 knockout_question_diff = None
             else:
                 if player.bonus_questions:
@@ -396,7 +395,7 @@ class Tournament(BaseModel):
                         knockout_question_answer = 0
                 else:
                     knockout_question_answer = 0
-                knockout_question_diff = abs(knockout_question_answer - TOTAL_GOALS_IN_TOURNAMENT)
+                knockout_question_diff = abs(knockout_question_answer - config.TOTAL_GOALS_IN_TOURNAMENT)
 
             player_tuples.append((score, knockout_question_diff, nick))
 
@@ -453,17 +452,15 @@ class Tournament(BaseModel):
     #         f.write(stats_page_text)
 
 
-def parse_data(directory = "webpage/source", exclude_players: Optional[List[str]] = None, include_phases:Optional[List[Phase]] = None):
+def parse_data(directory = "webpage/source", exclude_players: Optional[List[str]] = None):
 
-    if include_phases is None:
-        include_phases = []
 
     t = Tournament()
     t.build_players(exclude_players=exclude_players)
 
     t.add_guesses(exclude_players=exclude_players)
 
-    t.compute_points(include_phases)
+    t.compute_points(config.INCLUDE_PHASES)
 
     return t
 

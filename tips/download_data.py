@@ -8,6 +8,7 @@ from tips.config import REPO_ROOT, DATA_DIR
 def get_link_dict():
     return {
         "bonus_ANSWERS": "https://docs.google.com/spreadsheets/d/1WjUqj1Aw-dVt3Q0zXu2fBu-SBzih-D0fu3MdRb7-aWY/export?format=csv",
+        "bonus_RESULTS": "https://docs.google.com/spreadsheets/d/1OyH9dMZel4cp3aTcnUX3HKrn1cBQJnlEQbSpbv-0T-8/export?format=csv",
         "group_stage_ANSWERS": "https://docs.google.com/spreadsheets/d/1UydotLnGOnBp3_lr7ZwBuErq6zA5ULuC5ayGXf0iwfA/export?format=csv",
         "group_stage_RESULTS": "https://docs.google.com/spreadsheets/d/1cD-n8ZPWb3OxuOOi14MCRsq47WGtTYS2_w46BASwoMA/export?format=csv",
         "last_32_ANSWERS": "https://docs.google.com/spreadsheets/d/1T78t8ImneCVAjGrTceh0XKGWp6Jzhm_nqE0lKM4KEl0/export?format=csv",
@@ -18,8 +19,8 @@ def get_link_dict():
         "quarter_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1t6ij7w_EUj8CHdww4XIzjZz1xiljL_Ni7YSbpirZ-xI/export?format=csv",
         "semi_finals_ANSWERS": "https://docs.google.com/spreadsheets/d/18ycCDt3vb1uHnB960drX1-Z6M7qKICErHaTs2HlniWY/export?format=csv",
         "semi_finals_RESULTS": "https://docs.google.com/spreadsheets/d/1r8ho9b0Zwy0ohBBhpJ0UOsgH5wGD_S0khIx1_fp94f4/export?format=csv", 
-        # "final_ANSWERS": "https://docs.google.com/spreadsheets/d/15UNX9Oi3_IC8UQthggdiQEpS_2pOaxAFrabzkmKQnKQ/export?format=csv",
-        # "final_RESULTS": "https://docs.google.com/spreadsheets/d/1a-b1YPV_wBqNuyrcbDb9WguxjRrNOY47tew6TNQL24A/export?format=csv"
+        "final_ANSWERS": "https://docs.google.com/spreadsheets/d/1v3MzRYGEl6cQ_6yx1_40-iZNytwsKoK68Ch_ENHYAhs/export?format=csv",
+        "final_RESULTS": "https://docs.google.com/spreadsheets/d/14MC3PIDjHLk-gT_k77G8H4ej9uyBUy2fuHIg_xPYLXA/export?format=csv"
     }
 
 def download_data():

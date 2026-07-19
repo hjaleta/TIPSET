@@ -5,17 +5,24 @@ EXCLUDE_PLAYERS = ["Test1",  "Test 1", "Test2", "Test 2", "Test3", "Test 3", "Te
                    ]
 
 INCLUDE_PHASES = ["group_stage", 'bonus', "last_32", "last_16", "quarter_finals", "semi_finals", 
-                  #"final", "bonus"
+                  "final", 
+                  # "bonus"
                   ]
 
-GAMES_PER_PHASE = {
-    "group_stage": 72,
-    "last_32": 16,
-    "last_16": 8,
-    "quarter_finals": 4,
-    "semi_finals": 2,
-    # "final": 1,
+
+
+PHASE_STRUCTURE = {
+    'bonus' :tuple(['text']*13 + ['knockout_question']),
+    'group_stage' : tuple(['group_game']*72 + ['group_table']*12),
+    'last_32' : tuple(['knockout_game']*16),
+    'last_16' : tuple(['knockout_game']*8),
+    'quarter_finals' : tuple(['knockout_game']*4),
+    'semi_finals' : tuple(['knockout_game']*2),
+    'final' : tuple(['knockout_game']*2 + ['single_choice']*3 + ['multi_choice']*1 ),
 }
+
+PHASE_STARTING_COLUMN = {phase:2 for phase in PHASE_STRUCTURE.keys()}
+PHASE_STARTING_COLUMN['group_stage'] = 4
 
 IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
 

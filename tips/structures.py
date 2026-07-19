@@ -48,17 +48,17 @@ class Game(BaseModel):
     score : Tuple[int, int]
     event_index : int
     group : Optional[Group] = None
-    phase : Phase
+    knockout_game: bool
     endtime : Endtime = '90'
     winner : Literal[Team, 'draw', None] = None
     points : Optional[int] = None
     is_facit : bool = False
-    is_played : bool = True
+    is_complete : bool = True
 
     @model_validator(mode='after')
     def get_group(self):
         
-        if self.phase == 'group_stage':
+        if not self.knockout_game:
             found_group = False
             for group, teams in groups.items():
                 if self.teams[0] in teams and self.teams[1] in teams:
@@ -79,9 +79,9 @@ class Game(BaseModel):
         
         if self.score[0] == self.score[1] == -1:
             self.winner = None
-            assert not self.is_played, "If score is (-1, -1), is_played must be False"
+            assert not self.is_complete, "If score is (-1, -1), is_complete must be False"
 
-        elif self.phase == 'group_stage':
+        elif not self.knockout_game:
             
             if self.winner is not None:
                 raise ValueError("Input for 'winner' must be None for group stage games")
@@ -108,10 +108,9 @@ class Game(BaseModel):
     @model_validator(mode='after')
     def check_endtime(self):
         
-        if self.phase == 'group_stage':
-            if self.endtime != '90':
-                raise ValueError('Group stage games are 90 minutes long')
-
+        if not self.knockout_game and self.endtime != '90':
+            raise ValueError('Group stage games are 90 minutes long')
+        
         # else:
         #     if self.score[0] == self.score[1] and self.endtime != 'penalties':
         #         raise ValueError('If a game is not in the group stage, endtime must be penalties if the score is a draw')
@@ -126,61 +125,19 @@ class Game(BaseModel):
         if self.score == facit_game.score:
             points += 1
         
-        if self.phase != 'group_stage' and self.endtime == facit_game.endtime:
+        if self.knockout_game and self.endtime == facit_game.endtime:
             points += 1
            
         self.points = points
 
 
-class FinalGame(Game):
-    corner_range: tuple[int, int]
-    fair_play_points: tuple[tuple[int,int], tuple[int, int]]
-    scorers: tuple[str, ...]
-    q_a_p_dict: Optional[dict[str, tuple[str, int]]] = None
-
-
-    def set_points(self, facit_game:'FinalGame'):
-        
-        self.points = 0
-        self.q_a_p_dict = {}
-        
-        winner_points = int(self.winner == facit_game.winner)
-        self.q_a_p_dict["Vilka vinner EM?"] = (self.winner, winner_points)
-        self.points += winner_points
-
-        score_points = int(self.score == facit_game.score)
-        self.q_a_p_dict["Hur slutar matchen?"] = (str(self.score[0]) + "-" + str(self.score[1]), score_points)
-        self.points += score_points
-
-        endtime_points = int(self.endtime==facit_game.endtime)
-        self.q_a_p_dict["När slutar matchen?"] = (endtime_dict_inv[self.endtime], endtime_points)
-        self.points += endtime_points
-
-        corner_points = int(self.corner_range == facit_game.corner_range)
-        self.q_a_p_dict["Hur många hörnor blir det i matchen?"] = (str(self.corner_range[0]) + "-" + str(self.corner_range[1]), corner_points)
-        self.points += corner_points
-
-        for i in range(2):
-            fp_points_i = int(self.fair_play_points[i] == facit_game.fair_play_points[i])
-            self.q_a_p_dict[f"Hur många fair play poäng får {self.teams[i]} i matchen?"] = (str(self.fair_play_points[i][0]) + "-" + str(self.fair_play_points[i][1]), fp_points_i)
-            self.points += fp_points_i
-
-        if len(self.scorers) <= 3:
-            scorer_points = sum(int(scorer in facit_game.scorers) for scorer in self.scorers)
-        else:
-            scorer_points = 0
-        
-        self.q_a_p_dict["Vilka spelare gör mål i matchen?"] = ( " & ".join(self.scorers), scorer_points)
-        self.points += scorer_points
-
-        
 
 class GroupTable(BaseModel):
     teams_in_order : Tuple[Team, Team, Team, Team]
     group: Optional[Group] = None
     points: Optional[int] = None
     is_facit : bool = False
-    is_finished : bool = True
+    is_complete : bool = True
     is_valid : bool = True
     event_index: int
 
@@ -207,13 +164,60 @@ class GroupTable(BaseModel):
         else:
             self.points = 0
 
-class Bonus(BaseModel):
+class TextQuestion(BaseModel):
     question: str
     answer: Optional[str] = None
     event_index: int
     points : Optional[int] | Literal["-"]
     is_facit : bool = False
-    
+
+class SingleChoiceQuestion(BaseModel):
+    question: str
+    answer: Optional[str] = None
+    event_index: int
+    points : Optional[int] = None
+    is_facit : bool = False
+    is_complete : bool = True
+
+    def set_points(self, facit_question: 'SingleChoiceQuestion'):
+        if self.answer == facit_question.answer:
+            self.points = 1
+        else:
+            self.points = 0
+
+
+class MultiChoiceQuestion(BaseModel):
+    question: str
+    answer: Optional[list[str]] = None
+    number_of_choices_allowed: int
+    event_index: int
+    points : Optional[int] = None
+    is_facit : bool = False
+    is_complete : bool = True
+
+    def set_points(self, facit_question: 'MultiChoiceQuestion'):
+        if self.answer is None or len(self.answer) > self.number_of_choices_allowed:
+            self.points = 0
+        else:
+            correct_choices = set(self.answer).intersection(set(facit_question.answer))
+            self.points = len(correct_choices)
+
+class KnockoutQuestion(BaseModel):
+    question: str
+    answer: int
+    event_index: int
+    is_facit : bool = False
+    is_complete : bool = True
+
+RST_HEADERS = {
+    'bonus': 'Bonusfrågor',
+    'group_stage': 'Gruppspel',
+    'last_32': 'Sextondelsfinaler',
+    'last_16': 'Åttondelsfinaler',
+    'quarter_finals': 'Kvartsfinaler',
+    'semi_finals': 'Semifinaler',
+    'final': 'Final'
+}
 
 class Player(BaseModel):
 
@@ -222,9 +226,7 @@ class Player(BaseModel):
     name: str
     nick: str
     email: str
-    games : Dict[Phase, List[Game]] = Field(default = {})
-    group_tables : List[GroupTable] = []
-    bonus_questions : List[Bonus] = []
+    questions : Dict[Phase, list] = Field(default = {})
     event_index_and_point_list: List = []
     total_points: Optional[int] = None
     is_facit : bool = False
@@ -233,25 +235,41 @@ class Player(BaseModel):
 
         assert facit_player.is_facit
 
-        for phase, games in self.games.items():
+        for phase, questions in self.questions.items():
+            
             if phase in include_phases:
-                for game, facit_game in zip(games, facit_player.games[phase]):
-                    if facit_game.is_played:
-                        game.set_points(facit_game)
-                        self.event_index_and_point_list.append((game.event_index, game.points))
-        
-        if "group_stage" in include_phases:
-            for table, facit_table in zip(self.group_tables, facit_player.group_tables):
-                if facit_table.is_finished:
-                    table.set_points(facit_table)
-                    self.event_index_and_point_list.append((table.event_index, table.points))
-                
-        if "bonus" in include_phases:
-            for bonus in self.bonus_questions:
-                points = bonus.points if isinstance(bonus.points, int) else 0
-                self.event_index_and_point_list.append((bonus.event_index, points))
-                
+
+                for question, facit_question in zip(questions, facit_player.questions[phase]):
+                    
+                    if isinstance(question, TextQuestion):
+                        self.event_index_and_point_list.append((question.event_index, question.points if isinstance(question.points, int) else 0))
+                    elif isinstance(question, KnockoutQuestion):
+                        self.event_index_and_point_list.append((question.event_index, 0))
+                    else:
+                        
+                        if facit_question.is_complete:
+                            
+                            question.set_points(facit_question)
+                            self.event_index_and_point_list.append((question.event_index, question.points))
+
+ 
         self.total_points = sum([point for _, point in self.event_index_and_point_list])
+
+    def get_question_type_string(self, question):
+        if isinstance(question, TextQuestion):
+            return 'text'
+        elif isinstance(question, SingleChoiceQuestion):
+            return 'single_choice'
+        elif isinstance(question, MultiChoiceQuestion):
+            return 'multi_choice'
+        elif isinstance(question, KnockoutQuestion):
+            return 'knockout_question'
+        elif isinstance(question, Game):
+            return 'group_game' if not question.knockout_game else 'knockout_game'
+        elif isinstance(question, GroupTable):
+            return 'group_table'
+        else:
+            raise ValueError(f"Unknown question type: {type(question)}")
 
     def build_guess_rst(self, directory: str = "webpage/source/content/players", include = None):
 
@@ -265,124 +283,114 @@ class Player(BaseModel):
 
         rst_files_to_include = []
 
-        if self.bonus_questions and 'bonus' in include:
-            with open(os.path.join(player_dir, 'bonus_table.csv'), 'w') as f:
-                f.write('"Fråga","Svar","Poäng"\n')
-                for bonus in self.bonus_questions:
-                    if bonus.points is None:
-                        points = "?"
-                    elif bonus.points == "-":
-                        points = "X"
-                    else:
-                        points = bonus.points
-
-                    f.write(f'"{bonus.question}","{bonus.answer}","{points}"\n')
-                
-            with open(os.path.join(player_dir, 'bonus.rst'), 'w') as f:
-                f.write(textwrap.dedent(
-                f"""
-                Bonusfrågor
-                -----------
-
-                """) + rst_csv_table(
-                    "bonus_table.csv",
-                    directives = {"widths": "65, 30, 5", "header-rows": 1}
-                )
-                )
+        CSV_TABLE_GROUPS = {
+            ('group_game', ): {'n_cols': 3, 'widths': '70, 20, 10', 'header_row': '"Match","Tippat resultat","Tjänade poäng"'},
+            ('knockout_game', ): {'n_cols': 5, 'widths': '60, 10, 10, 10, 10', 'header_row': '"Match","Tippat resultat","Tippad sluttid","Vinnare","Tjänade poäng"'},
+            ('group_table', ): {'n_cols': 2, 'widths': '10, 90', 'header_row': '"Placering","Lag"'},
+            ('single_choice', 'multi_choice', 'text'): {'n_cols': 3, 'widths': '65, 30, 5', 'header_row': '"Fråga","Svar","Poäng"'},
+            ('knockout_question', ): {'n_cols': 2, 'widths': '80, 20', 'header_row': '"Fråga","Svar"'},
             
-            rst_files_to_include.append('bonus')
-        
-        if self.group_tables and 'group_stage' in include:
-            group_table_rst_string = textwrap.dedent("""
-            Gruppspel - Tabeller
-            --------------------
-            """)
-            for group_table in self.group_tables:
-                group_table_file_path = os.path.join(player_dir, f"table_{group_table.group}.csv")
-                with open(group_table_file_path, 'w') as f:
-                    f.write("Placering,Lag\n")
-                    for i, team in enumerate(group_table.teams_in_order, start=1):
-                        if group_table.is_valid:
-                            f.write(f"{i},{team}\n")
-                        else:
-                            f.write(f"{i},-\n")
-                    
-                points = '?' if group_table.points is None else group_table.points
-                
-                group_table_rst_string += rst_csv_table(
-                    file_path=f"table_{group_table.group}.csv",
-                    title = f"Grupp {group_table.group}  -  Tjänade poäng: {points}",
-                    directives={"widths": "10, 90"}
-
-                )
-                
-                # textwrap.dedent(f"""
-                # .. csv-table:: Grupp {group_table.group}  -  Tjänade poäng: {points}
-                #     :file: table_{group_table.group}.csv
-                #     :widths: 10,90
-                # """)
-            
-            with open(os.path.join(player_dir, 'group_tables.rst'), 'w') as f:
-                f.write(group_table_rst_string)
-            
-            rst_files_to_include.append('group_tables')
-            
-
-        rst_metadata = {
-            'group_stage': ('Gruppspel - Matcher', (70, 20, 10)),
-            'last_32': ('Sextondelsfinaler', (60, 10, 10, 10, 10)),
-            'last_16': ('Åttondelsfinaler', (60, 10, 10, 10, 10)),
-            'quarter_finals': ('Kvartsfinaler', (60, 10, 10, 10, 10)),
-            'semi_finals': ('Semifinaler', (60, 10, 10, 10, 10)),
-            'final': ('Final', (40, 50, 10))
+            # ('knockout_question', ): {'n_cols': 3, 'widths': '70, 20, 10'},
         }
 
-        for phase, games in self.games.items():
-            if len(games) == 0 or phase not in include:
+        for phase, questions_phase in self.questions.items():
+            if phase not in include:
                 continue
-            table_file_path = os.path.join(player_dir, f"{phase}_table.csv")
-            phase_rst_file_path = os.path.join(player_dir, f"{phase}.rst")
-            rst_files_to_include.append(f"{phase}")
 
-            phase_rst_string = textwrap.dedent(
+            # question_type_string = 
+            
+            header = RST_HEADERS[phase]
+            section_string = textwrap.dedent(
             f"""
-            {rst_metadata[phase][0]}
-            {"-"*len(rst_metadata[phase][0])}
+            {header}
+            {"-"*len(header)}
             """
             )
 
-            phase_rst_string += rst_csv_table(
-                file_path=f"{phase}_table.csv",
-                directives={"header-rows":1, "widths": ",".join([str(width) for width in rst_metadata[phase][1]])}
-            )
-
+            questions_split_by_group = []
+            previous_question_type_group = tuple([])
+            for question in questions_phase:
+                question_type_string = self.get_question_type_string(question)
+                question_type_group = [group for group in CSV_TABLE_GROUPS.keys() if question_type_string in group][0]
+                
+                if question_type_group != previous_question_type_group:
+                    questions_split_by_group.append([question])
+                    previous_question_type_group = question_type_group
+                else:
+                    questions_split_by_group[-1].append(question)
             
-
-            with open(phase_rst_file_path, 'w') as f:
-                f.write(phase_rst_string)
             
-            if phase == 'group_stage':
-                with open(table_file_path, 'w') as f:
-                    f.write('"Match","Tippat resultat","Tjänade poäng"\n')
-                    for game in games:
-                        points = '?' if game.points is None else game.points
-                        f.write(f'"{game.teams[0]} - {game.teams[1]}","{game.score[0]} - {game.score[1]}","{points}"\n')
+            for q_i, questions_group in enumerate(questions_split_by_group):
+                questions_type_group = [group for group in CSV_TABLE_GROUPS.keys() if self.get_question_type_string(questions_group[0]) in group][0]
+                width_string = CSV_TABLE_GROUPS[questions_type_group]['widths']
+                header_row = CSV_TABLE_GROUPS[questions_type_group]['header_row']
+                # For group_table questions, we need to create a separate CSV file for each question
 
-            elif phase in ('last_32', 'last_16', 'quarter_finals', 'semi_finals'):
-                with open(table_file_path, 'w') as f:
-                    f.write('"Match","Tippat resultat","Tippad sluttid","Vinnare","Tjänade poäng"\n')
-                    for game in games:
-                        points = '?' if game.points is None else game.points
-                        endtime = "Straffar" if game.endtime == 'penalties' else f"{game.endtime} min"
-                        f.write(f'"{game.teams[0]} - {game.teams[1]}","{game.score[0]} - {game.score[1]}","{endtime}","{game.winner}","{points}"\n')
+                if self.get_question_type_string(questions_group[0]) == 'group_table':
+                    section_string += textwrap.dedent("""
+                        Gruppspel - Tabeller
+                        --------------------
+                        """)
+                    for group_table in questions_group:
 
-            elif phase == "final":
-                # f = self.games[phase][0]
-                with open(table_file_path, 'w') as f:
-                    f.write('"Fråga","Svar","Tjänade Poäng"\n')
-                    for question, (answer, points) in self.games["final"][0].q_a_p_dict.items():
-                        f.write(f'"{question}","{answer}","{points}"\n')
+                        group_table_filename = f"group_table_{group_table.group}.csv"
+                        points = '?' if group_table.points is None else group_table.points
 
+                        section_string += rst_csv_table(
+                                        file_path=group_table_filename,
+                                        title = f"Grupp {group_table.group}  -  Tjänade poäng: {points}",
+                                        directives={"widths": width_string, 'header-rows': 1}
+                                    )
+                        
+                        table_file_path = os.path.join(player_dir, group_table_filename)
+                        with open(table_file_path, 'w') as f:
+                            f.write(header_row + "\n")
+                            for i, team in enumerate(group_table.teams_in_order, start=1):
+                                if group_table.is_valid:
+                                    f.write(f'"{i}","{team}"\n')
+                                else:
+                                    f.write(f'"{i}","-"\n')
+            
+                else:
+                    question_table_filename = f"{phase}_table_{q_i}.csv"
+                    table_file_path = os.path.join(player_dir, question_table_filename)
+                    
+                    section_string += rst_csv_table(
+                        file_path=question_table_filename,
+                        directives={"widths": width_string, "header-rows": 1}
+                    )
+                    with open(table_file_path, 'w') as f:
+                        f.write(header_row + "\n")
+                        for question in questions_group:
+                            if isinstance(question, (TextQuestion, SingleChoiceQuestion, MultiChoiceQuestion, Game)):
+                                points = '?' if question.points is None else question.points
+                                if isinstance(question, (TextQuestion, SingleChoiceQuestion, MultiChoiceQuestion)):
+                                    question_str = question.question.replace('"', "'")
+                                    if isinstance(question, (TextQuestion, SingleChoiceQuestion)):
+                                        answer_str = question.answer.replace('"', "'")
+                                    elif isinstance(question, MultiChoiceQuestion):
+                                        answer_str = ', '.join(question.answer).replace('"', "'")
+                                    
+                                    # points = '?' if question.points is None else question.points
+                                    f.write(f'"{question_str}","{answer_str}","{points}"\n')
+                                elif isinstance(question, Game):
+                                    if question.knockout_game:
+                                        endtime = "Straffar" if question.endtime == 'penalties' else f"{question.endtime} min"
+                                        f.write(f'"{question.teams[0]} - {question.teams[1]}","{question.score[0]} - {question.score[1]}","{endtime}","{question.winner}","{points}"\n')
+                                    else:
+                                        f.write(f'"{question.teams[0]} - {question.teams[1]}","{question.score[0]} - {question.score[1]}","{points}"\n')
+                        
+                            
+                            elif isinstance(question, KnockoutQuestion):
+                                f.write(f'"{question.question.replace('"', "'")}","{question.answer}"\n')
+                            else:
+                                raise ValueError(f"Unknown question type: {type(question)}")
+
+            with open(os.path.join(player_dir, f"{phase}.rst"), 'w') as f:
+                f.write(section_string)
+            rst_files_to_include.append(f"{phase}")
+
+           
 
         player_index_rst_string = textwrap.dedent(
         f"""
@@ -402,11 +410,19 @@ class Player(BaseModel):
 
     @property
     def highest_event_index(self):
-        max_game_event_index = max([game.event_index for phase, games in self.games.items() for game in games])
-        max_table_event_index = max([table.event_index for table in self.group_tables]) if self.group_tables else 0
-        bonus_event_index = max([bonus.event_index for bonus in self.bonus_questions]) if self.bonus_questions else 0
-        return max(max_game_event_index, max_table_event_index, bonus_event_index)
+        
+        return max([q.event_index for phase, questions in self.questions.items() for q in questions])
+        
 
+QUESTION_TYPE_DICT = {
+    "text": (TextQuestion, 2),
+    "single_choice": (SingleChoiceQuestion, 1),
+    "multi_choice": (MultiChoiceQuestion, 1),
+    'group_game': (Game, 2),
+    'group_table': (GroupTable, 4),
+    'knockout_game': (Game, 4),
+    "knockout_question": (KnockoutQuestion, 1)
+}
 
 if __name__ == "__main__":
     g = Game(teams=('Tyskland', 'Skottland'), score=(2, 1), phase='group_stage')
