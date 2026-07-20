@@ -8,6 +8,7 @@ from tips.config import (DOWNLOAD_DATA,
                          INCLUDE_PHASES, 
                          IS_GITHUB_ACTION)
 
+from tips.plots import make_plots 
 
 
 print(f"DOWNLOAD_DATA: {DOWNLOAD_DATA}")
@@ -34,3 +35,5 @@ tournament = parse_data(exclude_players=EXCLUDE_PLAYERS)
 tournament.build_player_guesses_rst(include=INCLUDE_PHASES)
 tournament.build_rst_home_page_and_leaderboard(is_github_action = IS_GITHUB_ACTION)
 # tournament.build_rst_stats_page(is_github_action = IS_GITHUB_ACTION)
+
+make_plots(tournament)

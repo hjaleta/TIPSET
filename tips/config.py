@@ -30,6 +30,8 @@ IS_GITHUB_ACTION = os.getenv("IS_GITHUB_ACTION", "false")
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(REPO_ROOT, "data")
 
+PLOTS_DIR = os.path.join(REPO_ROOT, "plots")
+
 # Dictionary of spelling mistakes from participants
 # should be on form
 # spelling_dict = { 
@@ -65,4 +67,4 @@ endtime_dict = {
 
 endtime_dict_inv = {val: key for key, val in endtime_dict.items()}
 
-TOTAL_GOALS_IN_TOURNAMENT = None
+TOTAL_GOALS_IN_TOURNAMENT = 304

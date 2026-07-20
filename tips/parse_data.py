@@ -388,14 +388,21 @@ class Tournament(BaseModel):
             if config.TOTAL_GOALS_IN_TOURNAMENT is None:
                 knockout_question_diff = None
             else:
-                if player.bonus_questions:
-                    try:
-                        knockout_question_answer = int(re.search(r"(\d+)", player.bonus_questions[-1].answer).group(1))
-                    except Exception as e:
-                        knockout_question_answer = 0
-                else:
-                    knockout_question_answer = 0
-                knockout_question_diff = abs(knockout_question_answer - config.TOTAL_GOALS_IN_TOURNAMENT)
+                found_knockout_question = False
+                for phase, questions in player.questions.items():
+                    for question in questions:
+                        if isinstance(question, KnockoutQuestion):
+                            knockout_question_answer = question.answer
+                            knockout_question_diff = abs(knockout_question_answer - config.TOTAL_GOALS_IN_TOURNAMENT)
+                            found_knockout_question = True
+                            break
+                    if found_knockout_question:
+                        break
+            
+            if not found_knockout_question:
+                knockout_question_diff = 1e10
+                
+                
 
             player_tuples.append((score, knockout_question_diff, nick))
 
