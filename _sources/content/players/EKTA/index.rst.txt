@@ -1,0 +1,14 @@
+
+EKTA
+====
+
+
+.. toctree::
+    :maxdepth: 1
+
+    bonus
+    group_stage
+    last_32
+    last_16
+    semi_finals
+    final

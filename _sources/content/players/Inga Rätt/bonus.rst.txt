@@ -1,0 +1,13 @@
+
+Bonusfrågor
+-----------
+
+.. csv-table:: None
+    :file: bonus_table_0.csv
+    :header-rows: 1
+    :widths: 65, 30, 5
+
+.. csv-table:: None
+    :file: bonus_table_1.csv
+    :header-rows: 1
+    :widths: 80, 20
